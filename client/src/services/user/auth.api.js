@@ -1,12 +1,11 @@
 import api from "../api.js";
-import errorToast from "../../utils/notification/error.js"
 import successToast from "../../utils/notification/success.js"
+import {apiErrorHandler} from "../../utils/apiErrorHandler.js"
 
 const signUp = async (credentials) => {
     try {
         if (!credentials.avatar) {
-           errorToast("Avatar is missing")
-           return {error: true, message: "Avatar is missing"}
+           apiErrorHandler(null, "Avatar is required")
         }
 
         const formData = new FormData()
@@ -23,21 +22,47 @@ const signUp = async (credentials) => {
         const res = await api.post("/user/register",formData)
 
         if (![200,201].includes(res.status)) {
-            errorToast("Signup failed. Please try again.")
-            return {error: true, message: res.statusText}
+            apiErrorHandler(null, "Signup failed. Please try again.")
         }
         
         successToast("Signup successfull")
         return res.data
 
     } catch (error) {
-        console.error("Auth Service Error :: signup ::", error);
-        errorToast(error.response?.data?.message || "Signup failed.")
-        return {error: true, message: error.message || "Signup failed."}
+        return apiErrorHandler(error, "Signup failed.")
+    }
+}
+
+const signIn = async(credentials) => {
+    try {
+       const {username, email, password} = credentials
+
+       if (!username || !email || !password) {
+        return apiErrorHandler(null, "Missing required fields")
+       }
+
+       const res = await api.post("/user/login",
+        {
+            username,
+            email,
+            password
+        }
+    )
+
+    if (res.status !== 200) {
+        return apiErrorHandler(null, "Signin failed. Please try again")
+    }
+
+    successToast("Signin successfull")
+    return res.data
+
+    } catch (error) {
+        return apiErrorHandler(error, "Signin failed")
     }
 }
 
 
 export {
     signUp,
+    signIn
 }
