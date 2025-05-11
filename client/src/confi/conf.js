@@ -1,5 +1,5 @@
 const conf = {
-    requestUrl: String(import.meta.env.BASE_URI),
+    requestUrl: String(import.meta.env.VITE_BASE_URI),
 }
 
 
