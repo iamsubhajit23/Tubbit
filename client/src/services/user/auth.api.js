@@ -57,4 +57,18 @@ const signIn = async (credentials) => {
   }
 };
 
-export { signUp, signIn };
+const signOut = async () => {
+  try {
+    const res = await api.post("/user/logout");
+
+    if (res.status !== 200) {
+      return apiErrorHandler(null, "Logout failed");
+    }
+    successToast("Logout successfully");
+    return res.data;
+  } catch (error) {
+    return apiErrorHandler(error, "Logout failed");
+  }
+};
+
+export { signUp, signIn, signOut };
