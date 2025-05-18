@@ -10,8 +10,8 @@ const createPlaylist = asyncHandler(async(req, res) => {
     const {name, description} = req.body
     const userId = req.user._id
 
-    if (!name || !description) {
-        throw new apiError(400, "Playlist name and description both are required")
+    if (!name) {
+        throw new apiError(400, "Playlist name is required")
     }
 
     const sanitizedName = sanitizeHtml(name, {
@@ -27,7 +27,7 @@ const createPlaylist = asyncHandler(async(req, res) => {
     const createdPlaylist = await Playlist.create(
         {
             name: sanitizedName,
-            description: sanitizedDescription,
+            description: sanitizedDescription || "",
             videos: [],
             owner: userId
         }
@@ -141,8 +141,8 @@ const updatePlaylistInfo = asyncHandler(async(req, res) => {
     const {playlistId} = req.params
     const userId = req.user._id
 
-    if (!name || !description) {
-        throw new apiError(400, "Playlist name and description both are required")
+    if (!name && !description) {
+        throw new apiError(400, "Playlist name or desciption is  required")
     }
 
     if (!mongoose.Types.ObjectId.isValid(playlistId)) {
