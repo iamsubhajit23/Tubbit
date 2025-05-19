@@ -104,3 +104,11 @@ const getUserAllTweets = async (userId) => {
     return console.log(error?.response?.data?.message);
   }
 };
+
+export {
+  createTweet,
+  updateTweet,
+  deleteTweet,
+  getTweetById,
+  getUserAllTweets,
+};
