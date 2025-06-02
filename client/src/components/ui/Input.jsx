@@ -1,44 +1,24 @@
 import React, { forwardRef } from "react";
-import * as AvatarPrimitive from "@radix-ui/react-avatar";
-import { cn } from "@/lib/utils";
+import { cn } from "../../utils/cn.js";
 
-const Avatar = forwardRef(function Avatar({ className, ...props }, ref) {
+const Input = forwardRef(({
+    className,
+    type,
+    ...props
+}, ref) => {
     return (
-        <AvatarPrimitive.Root
-            ref={ref}
+        <input
+            type={type}
             className={cn(
-                "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+                "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
                 className
             )}
-            {...props}
-        />
-    );
-});
-Avatar.displayName = AvatarPrimitive.Root.displayName;
-
-const AvatarImage = forwardRef(function AvatarImage({ className, ...props }, ref) {
-    return (
-        <AvatarPrimitive.Image
             ref={ref}
-            className={cn("aspect-square h-full w-full", className)}
             {...props}
         />
     );
 });
-AvatarImage.displayName = AvatarPrimitive.Image.displayName;
 
-const AvatarFallback = forwardRef(function AvatarFallback({ className, ...props }, ref) {
-    return (
-        <AvatarPrimitive.Fallback
-            ref={ref}
-            className={cn(
-                "flex h-full w-full items-center justify-center rounded-full bg-muted",
-                className
-            )}
-            {...props}
-        />
-    );
-});
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
+Input.displayName = "Input";
 
-export { Avatar, AvatarImage, AvatarFallback };
+export { Input };
