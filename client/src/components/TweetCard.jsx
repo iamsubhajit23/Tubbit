@@ -4,7 +4,7 @@ import { Avatar, AvatarImage, AvatarFallback } from './ui/Avatar.jsx';
 import { Card } from './ui/Card.jsx';
 import { Button } from './ui/Button.jsx';
 
-const PostCard = ({
+const TweetCard = ({
     content,
     username,
     userAvatar,
@@ -130,4 +130,4 @@ const PostCard = ({
     );
 };
 
-export default PostCard;
+export default TweetCard;
