@@ -20,7 +20,7 @@ const AvatarImage = forwardRef(function AvatarImage({ className, ...props }, ref
     return (
         <AvatarPrimitive.Image
             ref={ref}
-            className={cn("aspect-square h-full w-full", className)}
+            className={cn("h-full w-full rounded-full object-cover", className)}
             {...props}
         />
     );
