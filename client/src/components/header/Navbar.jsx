@@ -7,7 +7,7 @@ import { Modal } from "../ui/Modal.jsx";
 import { Input } from "../ui/Input.jsx";
 import NotificationsDropdown from "../ui/NotificationDropdown.jsx";
 import lightLogo from '../../assets/Tubbit_Logo_final_light.png';
-import darkLogo from '../../assets/Tubbit_Logo_final_dark.png';
+import darkLogo from '../../assets/Tubbit_Logo_final_dark2.png';
 
 export const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
@@ -16,7 +16,7 @@ export const Navbar = () => {
   const logo = theme == "dark"? darkLogo: lightLogo;
   return (
     <>
-      <nav className="sticky top-0 z-40 bg-white dark:bg-transparent dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
+      <nav className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b dark:bg-transparent border-gray-200 dark:border-gray-700 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo and Mobile Menu Toggle */}
@@ -27,7 +27,7 @@ export const Navbar = () => {
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <div className="flex items-center space-x-2 w-">
+              <div className="flex items-center space-x-2">
                   <img
                     src={logo}
                     alt="Tubbit Logo"
