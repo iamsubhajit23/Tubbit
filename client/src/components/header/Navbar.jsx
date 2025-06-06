@@ -1,19 +1,59 @@
 import React, { useState } from "react";
-import { Search, Upload, Moon, Sun, Menu, Bell } from "lucide-react";
+import { Search, Upload, Moon, Sun, Menu } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { useTheme } from "../ThemeProvider.jsx";
 import { Button } from "../ui/Button.jsx";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/Avatar.jsx";
-import { Modal } from "../ui/Modal.jsx";
 import { Input } from "../ui/Input.jsx";
+import UploadModal from "../UploadModal.jsx";
 import NotificationsDropdown from "../ui/NotificationDropdown.jsx";
-import lightLogo from '../../assets/Tubbit_Logo_final_light.png';
-import darkLogo from '../../assets/Tubbit_Logo_final_dark2.png';
+import lightLogo from "../../assets/Tubbit_Logo_final_light.png";
+import darkLogo from "../../assets/Tubbit_Logo_final_dark2.png";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/DropDownMenu.jsx";
 
 export const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+  const authStatus = useSelector((state) => state.auth.status);
+  const authUser = useSelector((state) => state.auth.userData);
+  const user = authUser || {};
+  const logout = useSelector((state) => state.auth.logout);
+
+  // Determine which logo to use based on the theme
+  const logo = theme == "dark" ? darkLogo : lightLogo;
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const logo = theme == "dark"? darkLogo: lightLogo;
+
+  const handleAuthClick = () => {
+    navigate("/auth");
+  };
+
+  const handleProfileClick = () => {
+    navigate("/profile");
+  };
+
+  const handleLogout = () => {
+    logout();
+    setIsMenuOpen(false);
+    setIsUploadModalOpen(false);
+    navigate("/");
+  };
+
+  const handleUploadClick = () => {
+    if (!authStatus) {
+      navigate("/auth");
+      return;
+    }
+    setIsUploadModalOpen(true);
+  };
   return (
     <>
       <nav className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b dark:bg-transparent border-gray-200 dark:border-gray-700 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
@@ -28,11 +68,11 @@ export const Navbar = () => {
                 <Menu className="w-5 h-5" />
               </button>
               <div className="flex items-center space-x-2">
-                  <img
-                    src={logo}
-                    alt="Tubbit Logo"
-                    className="h-16 w-16 object-contain"
-                  />
+                <img
+                  src={logo}
+                  alt="Tubbit Logo"
+                  className="h-16 w-16 object-contain"
+                />
               </div>
             </div>
 
@@ -65,25 +105,74 @@ export const Navbar = () => {
                 )}
               </Button>
 
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => setIsUploadModalOpen(true)}
-                className="hidden sm:flex"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload
-              </Button>
+              {/* authentication */}
+              {authStatus ? (
+                // User Menu (when logged in)
+                <DropdownMenu>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleUploadClick}
+                    className="hidden sm:flex"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload
+                  </Button>
+                  <NotificationsDropdown />
 
-              <NotificationsDropdown />
-
-              <Avatar>
-                <AvatarImage
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150"
-                  alt="User"
-                />
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="relative h-8 w-8 rounded-full"
+                    >
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src= "https://github.com/shadcn.png" alt={user?.name} />
+                        <AvatarFallback>
+                          {user?.name?.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="w-56 bg-popover border border-border shadow-lg"
+                    align="end"
+                    forceMount
+                  >
+                    <div className="flex items-center justify-start gap-2 p-2">
+                      <div className="flex flex-col space-y-1 leading-none">
+                        <p className="font-medium">{user?.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {user?.email}
+                        </p>
+                      </div>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleProfileClick}>
+                      {/* <User className="mr-2 h-4 w-4" /> */}
+                      Go to Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      {/* <Settings className="mr-2 h-4 w-4" /> */}
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      {/* <LogOut className="mr-2 h-4 w-4" /> */}
+                      Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                // Sign In/Sign Up buttons (when not logged in)
+                <div className="flex items-center space-x-2">
+                  <Button variant="ghost" size="sm" onClick={handleAuthClick}>
+                    Sign In
+                  </Button>
+                  <Button size="sm" onClick={handleAuthClick}>
+                    Sign Up
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -103,28 +192,12 @@ export const Navbar = () => {
             </div>
           </div>
         )}
-      </nav>
 
-      {/* Upload Modal */}
-      <Modal
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-      >
-        <div className="p-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Upload Content
-          </h2>
-          <div className="space-y-4">
-            <Button variant="default" className="w-full">
-              <Upload className="w-4 h-4 mr-2" />
-              Upload Video
-            </Button>
-            <Button variant="secondary" className="w-full">
-              Create Post
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        <UploadModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+        />
+      </nav>
     </>
   );
 };
