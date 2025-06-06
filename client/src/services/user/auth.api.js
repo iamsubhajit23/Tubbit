@@ -4,29 +4,28 @@ import { apiErrorHandler } from "../../utils/apiErrorHandler.js";
 
 const signUp = async (credentials) => {
   try {
-    if (!credentials.avatar) {
-      apiErrorHandler(null, "Avatar is required");
+    const { fullname, username, email, password } = credentials;
+    if (
+      [fullname, username, email, password].some(
+        (field) => field?.trim() === ""
+      )
+    ) {
+      return apiErrorHandler(null, "Missing required fields");
     }
 
-    const formData = new FormData();
-    formData.append("username", credentials.username);
-    formData.append("fullname", credentials.fullname);
-    formData.append("email", credentials.email);
-    formData.append("password", credentials.password);
-    formData.append("avatar", credentials.avatar);
-
-    if (credentials.coverimage) {
-      formData.append("coverimage", credentials.coverimage);
-    }
-
-    const res = await api.post("/user/register", formData);
+    const res = await api.post("/user/register", {
+      fullname,
+      username,
+      email,
+      password,
+    });
 
     if (![200, 201].includes(res.status)) {
       apiErrorHandler(null, "Signup failed. Please try again.");
     }
 
     successToast("Signup successfull");
-    return res.data;
+    return res;
   } catch (error) {
     return apiErrorHandler(error, "Signup failed.");
   }
@@ -36,7 +35,7 @@ const signIn = async (credentials) => {
   try {
     const { username, email, password } = credentials;
 
-    if (!username || !email || !password) {
+    if ([username, email, password].some((field) => field?.trim() === "")) {
       return apiErrorHandler(null, "Missing required fields");
     }
 
@@ -51,7 +50,7 @@ const signIn = async (credentials) => {
     }
 
     successToast("Signin successfull");
-    return res.data;
+    return res;
   } catch (error) {
     return apiErrorHandler(error, "Signin failed");
   }
