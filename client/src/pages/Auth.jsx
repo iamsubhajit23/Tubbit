@@ -1,4 +1,7 @@
 import React from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { Button } from "../components/ui/Button.jsx";
 import { Input } from "../components/ui/Input.jsx";
 import { Label } from "../components/ui/Label.jsx";
@@ -19,13 +22,17 @@ import { useTheme } from "../components/ThemeProvider.jsx";
 import lightLogo from "../assets/Tubbit_Logo_final_light.png";
 import darkLogo from "../assets/Tubbit_Logo_final_dark2.png";
 import { signUp, signIn } from "../services/user/auth.api.js";
-import { useForm } from "react-hook-form";
-import {useNavigate} from 'react-router-dom'
+import {login as storeLogin} from "../store/AuthSlice.js";
+
 
 const Auth = () => {
   const { theme } = useTheme();
   const logo = theme == "dark" ? darkLogo : lightLogo;
+
   const navigate = useNavigate();
+  const signInAuthStatus = useSelector((state) => state.auth.status);
+  const signinDispatch = useDispatch();
+  const signUpDispatch = useDispatch();
 
   const {
     register: signinRegister,
@@ -40,13 +47,23 @@ const Auth = () => {
 
   const logInUser = async (data) => {
     await signIn(data);
-    navigate("/profile");
+    const response = await signIn(data);
+    if (response.status === 200) {
+      const userData = response.data;
+      signinDispatch(storeLogin(userData));
+      navigate("/");
+    }
   };
 
   const createAccount = async (data) => {
-    data.avatar = data.avatar[0];
-    if (data.coverimage?.length) data.coverimage = data.coverimage[0];
-    await signUp(data);
+
+    const response = await signUp(data);
+    if (response.status === 201 || response.status === 200) {
+      userData = response.data;
+      signUpDispatch(storeLogin(userData));
+      navigate("/");
+    }
+    
   };
 
   return (
@@ -85,7 +102,10 @@ const Auth = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={signinHandleSubmit(logInUser)} className="space-y-4">
+                <form
+                  onSubmit={signinHandleSubmit(logInUser)}
+                  className="space-y-4"
+                >
                   <div className="space-y-2">
                     <Label htmlFor="signin-username">Username</Label>
                     <Input
@@ -101,7 +121,7 @@ const Auth = () => {
                         {signinErrors.username.message}
                       </span>
                     )}
-                  </div>  
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="signin-email">Email</Label>
                     <Input
@@ -177,9 +197,10 @@ const Auth = () => {
                       {...signupRegister("fullname", {
                         required: "Full Name is required",
                         pattern: {
-                            value: /(^[A-Za-z]{3,16})([ ]{0,1})([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})/,
-                            message: "Invalid Name format"
-                        }
+                          value:
+                            /(^[A-Za-z]{3,16})([ ]{0,1})([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})?([ ]{0,1})?([A-Za-z]{3,16})/,
+                          message: "Invalid Name format",
+                        },
                       })}
                     />
                     {signupErrors.fullname && (
@@ -187,7 +208,7 @@ const Auth = () => {
                         {signupErrors.fullname.message}
                       </span>
                     )}
-                  </div>  
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-username">Username</Label>
                     <Input
