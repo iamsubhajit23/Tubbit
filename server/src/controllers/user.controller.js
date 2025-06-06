@@ -27,23 +27,10 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
 
 const userRegister = asyncHandler(async (req, res) => {
   const { username, email, fullname, password } = req.body;
-  const avatarLocalPath = req.files?.avatar[0]?.path;
-  //const coverimageLocalPath = req.files?.coverimage[0]?.path;
-  let coverimageLocalPath;
-  if (
-    req.files &&
-    Array.isArray(req.files.coverimage) &&
-    req.files.coverimage.length > 0
-  ) {
-    coverimageLocalPath = req.files.coverimage[0].path;
-  }
-
   //field validation
   if (
     [username, email, fullname, password].some((field) => field?.trim() === "")
   ) {
-    deleteLocalFile(avatarLocalPath)
-    deleteLocalFile(coverimageLocalPath)
     throw new apiError(400, "All fields are required!");
   }
 
@@ -52,20 +39,7 @@ const userRegister = asyncHandler(async (req, res) => {
     $or: [{ username }, { email }],
   });
   if (existedUser) {
-    deleteLocalFile(avatarLocalPath)
-    deleteLocalFile(coverimageLocalPath)
     throw new apiError(400, "User with same email or username already exists!");
-  }
-
-  //file upload on cloudinary
-  if (!avatarLocalPath) {
-    deleteLocalFile(coverimageLocalPath)
-    throw new apiError(400, "Avatar file is required for register");
-  }
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
-  const coverimage = await uploadOnCloudinary(coverimageLocalPath);
-  if (!avatar.url) {
-    throw new apiError(400, "Error while upload avatar on Cloudinary!");
   }
 
   //create user object on db
@@ -73,8 +47,6 @@ const userRegister = asyncHandler(async (req, res) => {
     username: username.toLowerCase(),
     email,
     fullname,
-    avatar: avatar.url,
-    coverimage: coverimage?.url || "",
     password,
   });
 
@@ -112,7 +84,7 @@ const userLogIn = asyncHandler(async (req, res) => {
 
   //validate password
   const isPasswordValid = await user.isPasswordCorrect(password);
-  
+
   if (!isPasswordValid) {
     throw new apiError(401, "Password is invalid");
   }
@@ -290,11 +262,10 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new apiError(401, "Avatar file is required!");
   }
 
-  //TODO:unsync localAvatarFile
-
   const avatar = await uploadOnCloudinary(avatarLocalPath); // return response.url
 
   if (!avatar.url) {
+    deleteLocalFile(avatarLocalPath);
     throw new apiError(400, "Error, while updating avatar!");
   }
 
@@ -325,6 +296,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
   const coverImage = await uploadOnCloudinary(coverimageLocalPath);
 
   if (!coverImage.url) {
+    deleteLocalFile(coverimageLocalPath);
     throw new apiError(401, "Error, while uploading cover Image!");
   }
 
