@@ -1,7 +1,16 @@
 import React, { useState } from "react";
-import { Search, Upload, Moon, Sun, Menu } from "lucide-react";
+import {
+  Search,
+  Upload,
+  Moon,
+  Sun,
+  Menu,
+  LogOut,
+  Settings,
+  User,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useTheme } from "../ThemeProvider.jsx";
 import { Button } from "../ui/Button.jsx";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/Avatar.jsx";
@@ -10,6 +19,8 @@ import UploadModal from "../UploadModal.jsx";
 import NotificationsDropdown from "../ui/NotificationDropdown.jsx";
 import lightLogo from "../../assets/Tubbit_Logo_final_light.png";
 import darkLogo from "../../assets/Tubbit_Logo_final_dark2.png";
+import { signOut } from "../../services/user/auth.api.js";
+import { logout as storeLogOut } from "../../store/AuthSlice.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,10 +32,10 @@ import {
 export const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const logOutDispatch = useDispatch();
   const authStatus = useSelector((state) => state.auth.status);
-  const authUser = useSelector((state) => state.auth.userData);
-  const user = authUser || {};
-  const logout = useSelector((state) => state.auth.logout);
+  const authUserData = useSelector((state) => state.auth.userData);
+  const user = authUserData || {};
 
   // Determine which logo to use based on the theme
   const logo = theme == "dark" ? darkLogo : lightLogo;
@@ -40,11 +51,15 @@ export const Navbar = () => {
     navigate("/profile");
   };
 
-  const handleLogout = () => {
-    logout();
-    setIsMenuOpen(false);
-    setIsUploadModalOpen(false);
-    navigate("/");
+  const handleLogout = async () => {
+    const response = await signOut();
+
+    if (response.status == 200) {
+      logOutDispatch(storeLogOut());
+      setIsMenuOpen(false);
+      setIsUploadModalOpen(false);
+      navigate("/");
+    }
   };
 
   const handleUploadClick = () => {
@@ -67,7 +82,7 @@ export const Navbar = () => {
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <div className="flex items-center space-x-2">
+              <div onClick={() => navigate("/")} className="flex items-center space-x-2 cursor-pointer">
                 <img
                   src={logo}
                   alt="Tubbit Logo"
@@ -126,9 +141,12 @@ export const Navbar = () => {
                       className="relative h-8 w-8 rounded-full"
                     >
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src= "https://github.com/shadcn.png" alt={user?.name} />
+                        <AvatarImage
+                          src={user?.data?.avatar}
+                          alt={user?.data?.fullname}
+                        />
                         <AvatarFallback>
-                          {user?.name?.slice(0, 2).toUpperCase()}
+                          {user?.data?.fullname?.slice(0, 1).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
@@ -140,24 +158,24 @@ export const Navbar = () => {
                   >
                     <div className="flex items-center justify-start gap-2 p-2">
                       <div className="flex flex-col space-y-1 leading-none">
-                        <p className="font-medium">{user?.name}</p>
+                        <p className="font-medium">{user?.data?.fullname}</p>
                         <p className="text-xs text-muted-foreground">
-                          {user?.email}
+                          {user?.data?.email}
                         </p>
                       </div>
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleProfileClick}>
-                      {/* <User className="mr-2 h-4 w-4" /> */}
+                      <User className="mr-2 h-4 w-4" />
                       Go to Profile
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      {/* <Settings className="mr-2 h-4 w-4" /> */}
+                      <Settings className="mr-2 h-4 w-4" />
                       Settings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
-                      {/* <LogOut className="mr-2 h-4 w-4" /> */}
+                      <LogOut className="mr-2 h-4 w-4" />
                       Sign out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -192,12 +210,11 @@ export const Navbar = () => {
             </div>
           </div>
         )}
-
-        <UploadModal
+      </nav>
+      <UploadModal
           isOpen={isUploadModalOpen}
           onClose={() => setIsUploadModalOpen(false)}
         />
-      </nav>
     </>
   );
 };
