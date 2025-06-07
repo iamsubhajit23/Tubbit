@@ -64,7 +64,7 @@ const signOut = async () => {
       return apiErrorHandler(null, "Logout failed");
     }
     successToast("Logout successfully");
-    return res.data;
+    return res;
   } catch (error) {
     return apiErrorHandler(error, "Logout failed");
   }
