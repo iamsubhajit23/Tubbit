@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Video, FileText } from "lucide-react";
 import { Button } from "./ui/Button.jsx";
-import {Modal} from "./ui/Modal.jsx";
+import Modal from "./ui/Modal.jsx";
 
 const UploadModal = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
