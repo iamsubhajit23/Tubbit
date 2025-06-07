@@ -1,23 +1,31 @@
-import { useState } from 'react'
-import './App.css'
-import { ToastContainer } from "react-toastify"
-// import 'react-toastify/dist/ReactToastify.css';
+import "./index.css";
+import { Outlet } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useEffect } from "react";
+import { Navbar } from "./components/header/Navbar.jsx";
+import { getCurrentUser } from "./services/user/profile.api.js";
+import { login, logout } from "./store/AuthSlice.js";
 
-function App() {
-  const [error, setError] = useState('');
-  const notify = () => toast("Wow so easy!",{
-    position: 'bottom-right',
-    autoClose: 3000,
-  });
+const App = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const response = await getCurrentUser();
+      if ([200, 201].includes(response.statuscode)) {
+        dispatch(login({userData: response}));
+      }else{
+        dispatch(logout())
+      }
+    }
+    checkAuth();
+  }, [])
+
   return (
-    <div>
-      <h1 className='text-sky-500 text-xl'>TubBit - A full stack project</h1>
-      <div className='w-2.5 h-1.5 '>
-      <button className='bg-purple-500 hover:cursor-pointer' onClick={notify}>Notify!</button>
-      <ToastContainer/>
-      </div>
-    </div>
-  )
-}
-
-export default App
+    <>
+      <Navbar />
+      <Outlet />
+    </>
+  );
+};
+export default App;
