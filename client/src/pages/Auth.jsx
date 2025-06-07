@@ -30,7 +30,6 @@ const Auth = () => {
   const logo = theme == "dark" ? darkLogo : lightLogo;
 
   const navigate = useNavigate();
-  const signInAuthStatus = useSelector((state) => state.auth.status);
   const signinDispatch = useDispatch();
   const signUpDispatch = useDispatch();
 
@@ -46,7 +45,6 @@ const Auth = () => {
   } = useForm();
 
   const logInUser = async (data) => {
-    await signIn(data);
     const response = await signIn(data);
     if (response.status === 200) {
       const userData = response.data;
