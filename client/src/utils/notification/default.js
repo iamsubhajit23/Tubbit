@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 const defaultToast = (message) => {
   return toast(message, {
     position: "bottom-right",
-    autoClose: 3000,
+    autoClose: 2000,
     hideProgressBar: false,
     closeOnClick: true,
     pauseOnHover: true,
