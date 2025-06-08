@@ -68,7 +68,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
       <div className="w-full max-w-md animate-scale-in">
         <div className="text-center">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center mx-auto">
+          <div onClick={() => navigate("/")} className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center mx-auto cursor-pointer">
             <img
               src={logo}
               alt="Tubbit Logo"
