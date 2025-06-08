@@ -117,7 +117,7 @@ const getCurrentUser = async () => {
     const res = await api.get("/user/current-user");
     return res.data;
   } catch (error) {
-    return apiErrorHandler(error, "Unable to get user");
+    return;
   }
 };
 
