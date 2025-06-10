@@ -1,168 +1,148 @@
-import React, { useState } from 'react';
-import { User } from 'lucide-react';
-import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar.jsx';
-import { Button } from '../components/ui/Button.jsx';
+import { useState, useEffect } from 'react';
+import { Calendar, MapPin, Link as LinkIcon, Pencil } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/Tabs.jsx';
-import VideoCard from '../components/VideoCard.jsx';
-import { Card } from '../components/ui/Card.jsx';
+import { Button } from '../components/ui/Button.jsx';
+import { Avatar, AvatarImage, AvatarFallback } from '../components/ui/Avatar.jsx';
+import  VideoCard  from '../components/VideoCard.jsx';
+import TweetCard  from '../components/TweetCard.jsx';
+import { getChannelProfile } from '../services/user/profile.api.js';
 
-const Profile = () => {
-    const [following, setFollowing] = useState(false);
+const Profile = ({ userId, selfProfile = false }) => {
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [userVideos, setUserVideos] = useState([]);
+  const [userTweets, setUserTweets] = useState([]);
 
-    const userVideos = [
-        {
-            id: '1',
-            thumbnail: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=225&fit=crop',
-            title: 'Building Modern React Apps',
-            username: 'TechCoder',
-            views: '125K views',
-            timestamp: '2 days ago',
-            duration: '15:32'
-        },
-        {
-            id: '2',
-            thumbnail: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400&h=225&fit=crop',
-            title: 'JavaScript Advanced Concepts',
-            username: 'TechCoder',
-            views: '89K views',
-            timestamp: '1 week ago',
-            duration: '22:45'
-        }
-    ];
+  useEffect(async () => {
+    // Simulate API call
 
-    const userTweets = [
-        {
-            id: '1',
-            content: 'Just finished recording a new tutorial on React hooks! Can\'t wait to share it with you all 🚀 #React #JavaScript',
-            timestamp: '2 hours ago',
-            likes: 45,
-            retweets: 12,
-            replies: 8
-        },
-        {
-            id: '2',
-            content: 'Working on something exciting for the developer community. Stay tuned! 👨‍💻✨',
-            timestamp: '1 day ago',
-            likes: 78,
-            retweets: 23,
-            replies: 15
-        },
-        {
-            id: '3',
-            content: 'Remember: the best way to learn programming is by building projects. Start small, think big! 💡',
-            timestamp: '3 days ago',
-            likes: 156,
-            retweets: 67,
-            replies: 34
-        }
-    ];
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`/api/users/${userId}`);
+        const data = await response.json();
+        setUserData(data);
+        setUserVideos(data.videos);
+        setUserTweets(data.tweets);
+        setIsFollowing(data.isFollowing);
+      } catch (err) {
+        console.error('Failed to fetch user data:', err);
+      }
+    };
 
-    return (
-        <div className="min-h-screen">
-            {/* Banner */}
-            <div className="h-32 sm:h-48 bg-gradient-to-r from-tubbit-primary to-tubbit-secondary relative">
-                <div className="absolute inset-0 bg-black/20" />
-            </div>
+    fetchUserData();
+  }, [userId]);
 
-            <div className="container mx-auto px-4 -mt-16 sm:-mt-20 relative z-10">
-                {/* Profile Header */}
-                <div className="bg-card rounded-xl border p-6 mb-6 animate-slide-up">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
-                        <Avatar className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-background">
-                            <AvatarImage src="" alt="TechCoder" />
-                            <AvatarFallback className="text-2xl">TC</AvatarFallback>
-                        </Avatar>
+  if (!userData) return <div className="text-center py-10">Loading...</div>;
 
-                        <div className="flex-1">
-                            <h1 className="text-2xl sm:text-3xl font-bold mb-2">TechCoder</h1>
-                            <p className="text-muted-foreground mb-3">
-                                Full-stack developer passionate about modern web technologies.
-                                Sharing knowledge through tutorials and tips! 🚀
-                            </p>
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-6">
+      {/* Profile Header */}
+      <div className="relative mb-8">
+        <div 
+          className="h-48 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl mb-4"
+          style={{
+            backgroundImage: `url(${userData.bannerUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        />
 
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4">
-                                <span>1.2M subscribers</span>
-                                <span>•</span>
-                                <span>89 videos</span>
-                                <span>•</span>
-                                <span>Joined Dec 2020</span>
-                            </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-end gap-6 -mt-16 sm:-mt-12">
+          <Avatar className="w-20 h-20 border-4 border-white dark:border-gray-800">
+            <AvatarImage src={userData.avatarUrl} alt={userData.name} />
+            <AvatarFallback>{userData.initials}</AvatarFallback>
+          </Avatar>
 
-                            <Button
-                                variant={following ? "outline" : "default"}
-                                onClick={() => setFollowing(!following)}
-                                className="hover-scale"
-                            >
-                                {following ? 'Following' : 'Follow'}
-                            </Button>
-                        </div>
-                    </div>
+          <div className="flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  {userData.name}
+                  {selfProfile && (
+                    <button className="text-muted-foreground hover:text-foreground transition-colors">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  )}
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400">@{userData.username}</p>
+              </div>
+
+              {!selfProfile && (
+                <div className="flex space-x-3 mt-4 sm:mt-0">
+                  <Button
+                    variant={isFollowing ? "secondary" : "default"}
+                    onClick={() => setIsFollowing(!isFollowing)}
+                  >
+                    {isFollowing ? 'Following' : 'Follow'}
+                  </Button>
+                  <Button variant="ghost">Message</Button>
                 </div>
-
-                {/* Content Tabs */}
-                <Tabs defaultValue="videos" className="animate-fade-in">
-                    <TabsList className="grid w-full grid-cols-2 mb-6">
-                        <TabsTrigger value="videos">Videos ({userVideos.length})</TabsTrigger>
-                        <TabsTrigger value="tweets">Posts ({userTweets.length})</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="videos" className="space-y-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {userVideos.map((video, index) => (
-                                <div
-                                    key={video.id}
-                                    className="animate-slide-up"
-                                    style={{ animationDelay: `${index * 100}ms` }}
-                                >
-                                    <VideoCard {...video} />
-                                </div>
-                            ))}
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="tweets" className="space-y-4">
-                        {userTweets.map((tweet, index) => (
-                            <Card
-                                key={tweet.id}
-                                className="p-6 animate-slide-up hover:shadow-md transition-shadow"
-                                style={{ animationDelay: `${index * 100}ms` }}
-                            >
-                                <div className="flex gap-3">
-                                    <Avatar className="w-8 h-8">
-                                        <AvatarImage src="" alt="TechCoder" />
-                                        <AvatarFallback>TC</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="font-semibold">TechCoder</span>
-                                            <span className="text-muted-foreground">@techcoder</span>
-                                            <span className="text-muted-foreground">•</span>
-                                            <span className="text-muted-foreground text-sm">{tweet.timestamp}</span>
-                                        </div>
-                                        <p className="mb-3">{tweet.content}</p>
-                                        <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                                            <button className="hover:text-tubbit-primary transition-colors flex items-center gap-1">
-                                                💬 {tweet.replies}
-                                            </button>
-                                            <button className="hover:text-green-500 transition-colors flex items-center gap-1">
-                                                🔄 {tweet.retweets}
-                                            </button>
-                                            <button className="hover:text-red-500 transition-colors flex items-center gap-1">
-                                                ❤️ {tweet.likes}
-                                            </button>
-                                            <button className="hover:text-blue-500 transition-colors">
-                                                🔗
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Card>
-                        ))}
-                    </TabsContent>
-                </Tabs>
+              )}
             </div>
+
+            <p className="text-gray-900 dark:text-white mt-4 max-w-2xl">
+              {userData.bio}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-6 mt-4 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center space-x-1">
+                <MapPin className="w-4 h-4" />
+                <span>{userData.location}</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <LinkIcon className="w-4 h-4" />
+                <a href={userData.website} className="text-blue-600 dark:text-blue-400 hover:underline">
+                  {userData.website}
+                </a>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Calendar className="w-4 h-4" />
+                <span>Joined {userData.joinDate}</span>
+              </div>
+            </div>
+
+            <div className="flex space-x-6 mt-4">
+              <div>
+                <span className="font-bold text-gray-900 dark:text-white">{userData.subscribers}</span>
+                <span className="text-gray-600 dark:text-gray-400 ml-1">Subscribers</span>
+              </div>
+              <div>
+                <span className="font-bold text-gray-900 dark:text-white">{userData.following}</span>
+                <span className="text-gray-600 dark:text-gray-400 ml-1">Following</span>
+              </div>
+              <div>
+                <span className="font-bold text-gray-900 dark:text-white">{userData.videos}</span>
+                <span className="text-gray-600 dark:text-gray-400 ml-1">Videos</span>
+              </div>
+            </div>
+          </div>
         </div>
-    );
+      </div>
+
+      {/* Content Tabs */}
+      <Tabs defaultValue="videos" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="videos">Videos</TabsTrigger>
+          <TabsTrigger value="posts">Posts</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="videos" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {userVideos.map((video) => (
+              <VideoCard key={video.id} {...video} />
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="posts" className="mt-6 space-y-4">
+          {userTweets.map((tweet) => (
+            <TweetCard key={tweet.id} {...tweet} />
+          ))}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 };
 
 export default Profile;
