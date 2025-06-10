@@ -1,7 +1,8 @@
-import React from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "../components/ui/Button.jsx";
 import { Input } from "../components/ui/Input.jsx";
 import { Label } from "../components/ui/Label.jsx";
@@ -22,12 +23,15 @@ import { useTheme } from "../components/ThemeProvider.jsx";
 import lightLogo from "../assets/Tubbit_Logo_final_light.png";
 import darkLogo from "../assets/Tubbit_Logo_final_dark2.png";
 import { signUp, signIn } from "../services/user/auth.api.js";
-import {login as storeLogin} from "../store/AuthSlice.js";
-
+import { login as storeLogin } from "../store/AuthSlice.js";
 
 const Auth = () => {
   const { theme } = useTheme();
   const logo = theme == "dark" ? darkLogo : lightLogo;
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const navigate = useNavigate();
   const signinDispatch = useDispatch();
@@ -54,21 +58,22 @@ const Auth = () => {
   };
 
   const createAccount = async (data) => {
-
     const response = await signUp(data);
     if (response.status === 201 || response.status === 200) {
       userData = response.data;
       signUpDispatch(storeLogin(userData));
       navigate("/");
     }
-    
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
       <div className="w-full max-w-md animate-scale-in">
         <div className="text-center">
-          <div onClick={() => navigate("/")} className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center mx-auto cursor-pointer">
+          <div
+            onClick={() => navigate("/")}
+            className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center mx-auto cursor-pointer"
+          >
             <img
               src={logo}
               alt="Tubbit Logo"
@@ -142,18 +147,31 @@ const Auth = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signin-password">Password</Label>
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      className="transition-all focus:scale-[1.02]"
-                      {...signinRegister("password", {
-                        required: "Password is required",
-                        minLength: {
-                          value: 6,
-                          message: "Password must be at least 6 characters ",
-                        },
-                      })}
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        className="transition-all focus:scale-[1.02]"
+                        {...signinRegister("password", {
+                          required: "Password is required",
+                          minLength: {
+                            value: 6,
+                            message: "Password must be at least 6 characters ",
+                          },
+                        })}
+                      />
+                      <button
+                        type="button"
+                        onClick={togglePasswordVisibility}
+                        className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
                     {signinErrors.password && (
                       <span className="text-sm text-red-200">
                         {signinErrors.password.message}
@@ -245,19 +263,32 @@ const Auth = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      type="password"
-                      placeholder="••••••••"
-                      className="transition-all focus:scale-[1.02]"
-                      {...signupRegister("password", {
-                        required: "Password is required",
-                        pattern: {
-                          value: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
-                          message:
-                            "Must include upper, lower, number, and 8+ chars",
-                        },
-                      })}
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        className="transition-all focus:scale-[1.02]"
+                        {...signupRegister("password", {
+                          required: "Password is required",
+                          pattern: {
+                            value: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
+                            message:
+                              "Must include upper, lower, number, and 8+ chars",
+                          },
+                        })}
+                      />
+                      <button
+                        type="button"
+                        onClick={togglePasswordVisibility}
+                        className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
                     {signupErrors.password && (
                       <span className="text-red-200 text-sm">
                         {signupErrors.password.message}
