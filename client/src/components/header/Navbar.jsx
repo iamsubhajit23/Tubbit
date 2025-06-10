@@ -125,7 +125,7 @@ export const Navbar = () => {
                 // User Menu (when logged in)
                 <DropdownMenu>
                   <Button
-                    variant="default"
+                    variant="ghost"
                     size="sm"
                     onClick={handleUploadClick}
                     className="hidden sm:flex"
