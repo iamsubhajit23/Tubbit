@@ -5,13 +5,14 @@ import { Input } from "../components/ui/Input.jsx";
 import { Label } from "../components/ui/Label.jsx";
 import { Textarea } from "../components/ui/TextArea.jsx";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card.jsx";
+import { uploadVideo } from "../services/video/video.api.js";
 
 const UploadVideo = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    videoFile: null,
-    thumbnailFile: null,
+    videofile: null,
+    thumbnail: null,
   });
 
   const handleFileChange = (e, type) => {
@@ -19,7 +20,7 @@ const UploadVideo = () => {
     if (file) {
       setFormData((prev) => ({
         ...prev,
-        [type === "video" ? "videoFile" : "thumbnailFile"]: file,
+        [type === "video" ? "videofile" : "thumbnail"]: file,
       }));
     }
   };
@@ -27,14 +28,14 @@ const UploadVideo = () => {
   const removeFile = (type) => {
     setFormData((prev) => ({
       ...prev,
-      [type === "video" ? "videoFile" : "thumbnailFile"]: null,
+      [type === "video" ? "videofile" : "thumbnail"]: null,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Uploading video:", formData);
-    alert("Video upload functionality - API integration needed");
+     const response = await uploadVideo(formData);
+     console.log("Video is uploading");
   };
 
   return (
@@ -49,9 +50,9 @@ const UploadVideo = () => {
             <div className="space-y-2">
               <Label htmlFor="video">Video File *</Label>
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
-                {formData.videoFile ? (
+                {formData.videofile ? (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm">{formData.videoFile.name}</span>
+                    <span className="text-sm">{formData.videofile.name}</span>
                     <Button
                       type="button"
                       variant="outline"
@@ -121,10 +122,10 @@ const UploadVideo = () => {
             <div className="space-y-2">
               <Label htmlFor="thumbnail">Thumbnail</Label>
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
-                {formData.thumbnailFile ? (
+                {formData.thumbnail ? (
                   <div className="flex items-center justify-between">
                     <span className="text-sm">
-                      {formData.thumbnailFile.name}
+                      {formData.thumbnail.name}
                     </span>
                     <Button
                       type="button"
@@ -161,7 +162,7 @@ const UploadVideo = () => {
             <div className="flex gap-3">
               <Button
                 type="submit"
-                disabled={!formData.videoFile || !formData.title}
+                disabled={!formData.videofile || !formData.title}
               >
                 Upload Video
               </Button>
