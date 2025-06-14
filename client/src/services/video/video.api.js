@@ -4,30 +4,7 @@ import { apiErrorHandler } from "../../utils/apiErrorHandler";
 
 const uploadVideo = async (data) => {
   try {
-    if (!data.title || !data.description) {
-      return apiErrorHandler(null, "Title and description both required");
-    }
-
-    if (!data.videofile) {
-      return apiErrorHandler(null, "Video file is required");
-    }
-
-    const formData = new FormData();
-
-    formData.append("title", data.title);
-    formData.append("description", data.description);
-    formData.append("videofile", data.videofile);
-    if (data.thumbnail) {
-      formData.append("thumbnail", data.thumbnail);
-    }
-
-    const res = await api.post("/video/upload-video", formData);
-
-    if (res.status !== 200) {
-      return apiErrorHandler(null, "Video uploading failed. Please try again");
-    }
-
-    successToast("Video uploaded successfully");
+    const res = await api.post("/video/upload-video", data);
     return res.data;
   } catch (error) {
     return apiErrorHandler(error, "Video uploading failed");
