@@ -6,6 +6,14 @@ const tweetModel = new Schema(
       type: String,
       required: true,
     },
+    image: {
+      type: String,
+      required: true,
+    },
+    imagepublicid: {
+      type: String,
+      required: true,
+    },
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -13,7 +21,7 @@ const tweetModel = new Schema(
     isPublic: {
       type: Boolean,
       default: true,
-    }
+    },
   },
   { timestamps: true }
 );
