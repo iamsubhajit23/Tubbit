@@ -4,9 +4,15 @@ import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import sanitizeHtml from "sanitize-html";
+import { deleteLocalFile } from "../utils/deleteLocalFile.js";
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinary.js";
 
 const createTweet = asyncHandler(async (req, res) => {
   const { content } = req.body;
+  const imageLocalPath = req.files?.image?.[0].path;
   const userId = req.user._id;
 
   if (
@@ -14,6 +20,7 @@ const createTweet = asyncHandler(async (req, res) => {
     content.trim().length === 0 ||
     content.length > 280
   ) {
+    deleteLocalFile(imageLocalPath);
     throw new apiError(
       400,
       "Content must be a non-empty string with a maximum of 280 characters"
@@ -25,8 +32,17 @@ const createTweet = asyncHandler(async (req, res) => {
     allowedAttributes: [],
   });
 
+  const imageFile = await uploadOnCloudinary(imageLocalPath);
+
+  if (!imageFile.url) {
+    deleteLocalFile(imageFile);
+    throw new apiError(400, "Error while uploading image on cloudinary!");
+  }
+
   const createdTweet = await Tweet.create({
     content: sanitizedContent,
+    image: imageFile.url,
+    imagepublicid: imageFile.public_id,
     owner: userId,
   });
 
@@ -165,6 +181,8 @@ const deleteTweet = asyncHandler(async (req, res) => {
   if (existingTweet.owner.toString() !== userId.toString()) {
     throw new apiError(403, "You are not authorized to delete this tweet");
   }
+
+  await deleteFromCloudinary(existingTweet.imagepublicid, "image");
 
   const deletedTweet = await Tweet.findByIdAndDelete(existingTweet._id);
   if (!deletedTweet) {
