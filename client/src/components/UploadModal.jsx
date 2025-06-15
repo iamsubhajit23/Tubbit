@@ -12,9 +12,9 @@ const UploadModal = ({ isOpen, onClose }) => {
     navigate("/upload-video");
   };
 
-  const handleCreatePost = () => {
+  const handleCreateTweet = () => {
     onClose();
-    navigate("/create-post");
+    navigate("/create-tweet");
   };
 
   return (
@@ -35,13 +35,13 @@ const UploadModal = ({ isOpen, onClose }) => {
         </Button>
 
         <Button
-          onClick={handleCreatePost}
+          onClick={handleCreateTweet}
           className="w-full flex items-center gap-3 h-16 text-left justify-start"
           variant="outline"
         >
           <FileText className="w-6 h-6 text-tubbit-primary" />
           <div>
-            <h3 className="font-semibold">Create Post</h3>
+            <h3 className="font-semibold">Create Tweet</h3>
             <p className="text-sm text-muted-foreground">
               Share your thoughts with the community
             </p>
