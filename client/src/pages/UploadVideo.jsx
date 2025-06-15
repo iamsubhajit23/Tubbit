@@ -67,7 +67,9 @@ const UploadVideo = () => {
           <form onSubmit={handleSubmit(submitVideo)} className="space-y-6">
             {/* Video File */}
             <div className="space-y-2">
-              <Label htmlFor="videofile">Video File *</Label>
+              <Label htmlFor="videofile">
+                Video File <span className="text-tubbit-primary">*</span>
+              </Label>
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
                 {watchVideoFile?.[0] ? (
                   <div className="text-sm font-medium text-foreground">
@@ -106,7 +108,9 @@ const UploadVideo = () => {
 
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title">
+                Title <span className="text-tubbit-primary">*</span>
+              </Label>
               <Input
                 id="title"
                 placeholder="Enter video title"
@@ -130,7 +134,9 @@ const UploadVideo = () => {
 
             {/* Thumbnail */}
             <div className="space-y-2">
-              <Label htmlFor="thumbnail">Thumbnail</Label>
+              <Label htmlFor="thumbnail">
+                Thumbnail <span className="text-tubbit-primary">*</span>
+              </Label>
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
                 {watchThumbnailFile?.[0] ? (
                   <div className="text-sm font-medium text-foreground">
@@ -153,9 +159,16 @@ const UploadVideo = () => {
                   type="file"
                   id="thumbnail"
                   accept="image/*"
-                  {...register("thumbnail")}
+                  {...register("thumbnail", {
+                    required: "Thumbnail is required",
+                  })}
                   className="hidden"
                 />
+                {errors.thumbnail && (
+                  <p className="text-red-500 text-sm">
+                    {errors.thumbnail.message}
+                  </p>
+                )}
               </div>
             </div>
 
