@@ -7,7 +7,7 @@ const uploadVideo = async (data) => {
     const res = await api.post("/video/upload-video", data);
     return res.data;
   } catch (error) {
-    return apiErrorHandler(error, "Video uploading failed");
+    return console.log(error);
   }
 };
 
