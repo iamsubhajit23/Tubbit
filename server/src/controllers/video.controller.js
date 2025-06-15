@@ -20,10 +20,10 @@ const uploadVideo = asyncHandler(async (req, res) => {
     throw new apiError(401, "Video is required");
   }
 
-  if (!title || !description) {
+  if (!title) {
     deleteLocalFile(thumbnailLocalPath)
     deleteLocalFile(videoLocalPath)
-    throw new apiError(401, "Title and description both required!");
+    throw new apiError(401, "Title is required!");
   }
 
   if (!thumbnailLocalPath) {
