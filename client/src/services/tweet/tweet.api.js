@@ -1,21 +1,13 @@
 import api from "../api.js";
 import successToast from "../../utils/notification/success.js";
-import { apiErrorHandler } from "../../utils/apiErrorHandler.js";
 
-const createTweet = async (content) => {
+const createTweet = async (data) => {
   try {
-    if (!content) {
-      return console.log(
-        "SERVICES :: ERROR: Content is required to create tweet"
-      );
-    }
-
-    const res = await api.post("/tweet/create/", { content });
+    const res = await api.post("/tweet/create/", data);
 
     if (![200, 201].includes(res.status)) {
       return console.log("SERVICES :: ERROR: Failed to create Tweet");
     }
-    successToast("Tweet created successfully");
     return res.data;
   } catch (error) {
     return console.log(error?.response?.data?.message);
