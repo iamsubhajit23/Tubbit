@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/Button.jsx";
@@ -22,14 +22,24 @@ const UploadVideo = () => {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm();
 
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
 
   const watchVideoFile = watch("videofile");
   const watchThumbnailFile = watch("thumbnail");
+  const watchTitle = watch("title");
+
+  const buttonDisableControl =
+    isUploading ||
+    !watchTitle ||
+    !watchVideoFile?.[0] ||
+    !watchThumbnailFile?.[0];
 
   const submitVideo = async (data) => {
     setIsUploading(true);
@@ -72,8 +82,21 @@ const UploadVideo = () => {
               </Label>
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
                 {watchVideoFile?.[0] ? (
-                  <div className="text-sm font-medium text-foreground">
-                    {watchVideoFile[0].name}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">{watchVideoFile[0].name}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setValue("videofile", null);
+                          setVideoPreview(null);
+                        }}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center">
@@ -95,6 +118,12 @@ const UploadVideo = () => {
                   accept="video/*"
                   {...register("videofile", {
                     required: "Video file is required",
+                    onChange: (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setVideoPreview(URL.createObjectURL(file));
+                      }
+                    },
                   })}
                   className="hidden"
                 />
@@ -139,8 +168,30 @@ const UploadVideo = () => {
               </Label>
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4">
                 {watchThumbnailFile?.[0] ? (
-                  <div className="text-sm font-medium text-foreground">
-                    {watchThumbnailFile[0].name}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">
+                        {watchThumbnailFile[0].name}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setValue("thumbnail", null);
+                          setThumbnailPreview(null);
+                        }}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    {thumbnailPreview && (
+                      <img
+                        src={thumbnailPreview}
+                        alt="Preview"
+                        className="max-h-48 rounded-lg object-cover"
+                      />
+                    )}
                   </div>
                 ) : (
                   <div className="text-center">
@@ -161,6 +212,12 @@ const UploadVideo = () => {
                   accept="image/*"
                   {...register("thumbnail", {
                     required: "Thumbnail is required",
+                    onChange: (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setThumbnailPreview(URL.createObjectURL(file));
+                      }
+                    },
                   })}
                   className="hidden"
                 />
@@ -174,7 +231,7 @@ const UploadVideo = () => {
 
             {/* Buttons */}
             <div className="flex gap-3">
-              <Button type="submit" disabled={isUploading}>
+              <Button type="submit" disabled={buttonDisableControl}>
                 {isUploading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -187,7 +244,11 @@ const UploadVideo = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => reset()}
+                onClick={() => {
+                  reset();
+                  setVideoPreview(null);
+                  setThumbnailPreview(null);
+                }}
                 disabled={isUploading}
               >
                 Clear Form
