@@ -1,263 +1,251 @@
-import { useState } from "react";
+import { useState, useEffect,} from "react";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  Share,
+  Download,
+  Flag,
+  Bell,
+} from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { formatDistanceToNow } from "date-fns";
+import { Button } from "../components/ui/Button.jsx";
 import {
   Avatar,
   AvatarImage,
   AvatarFallback,
 } from "../components/ui/Avatar.jsx";
-import { Button } from "../components/ui/Button.jsx";
-import { Textarea } from "../components/ui/TextArea.jsx";
 import { Card } from "../components/ui/Card.jsx";
 import VideoPlayer from "../components/VideoPlayer.jsx";
+import { getVideoComments } from "../services/comment/comment.api.js";
+import errorToast from "../utils/notification/error.js";
+import { getAllVideos, getVideoById } from "../services/video/video.api.js";
+import RelatedVideoCard from "../components/RelatedVideoCard.jsx";
+import RelatedVideoSkeleton from "../components/RelatedVideoSkeleton.jsx";
 
 const Watch = () => {
-  const [liked, setLiked] = useState(false);
-  const [subscribed, setSubscribed] = useState(false);
-  const [comment, setComment] = useState("");
-  const [allComments, setAllComments] = useState([
-    {
-      id: "1",
-      username: "DevLover",
-      avatar: "",
-      content:
-        "Great tutorial! Really helped me understand the concepts better.",
-      timestamp: "2 hours ago",
-      likes: 15,
-    },
-    {
-      id: "2",
-      username: "CodeNewbie",
-      avatar: "",
-      content: "Could you make a follow-up video on advanced patterns?",
-      timestamp: "4 hours ago",
-      likes: 8,
-    },
-    {
-      id: "3",
-      username: "WebDev2023",
-      avatar: "",
-      content: "The explanation at 10:30 was particularly helpful. Thanks!",
-      timestamp: "1 day ago",
-      likes: 23,
-    },
-  ]);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [isDisliked, setIsDisliked] = useState(false);
+  const [videoData, setVideoData] = useState();
+  const [comments, setComments] = useState([]);
+  const [relatedVideos, setRelatedVideos] = useState([]);
+  const [isLoadingRelated, setIsLoadingRelated] = useState(true);
+  const { videoId } = useParams();
+  const authUserData = useSelector((state) => state.auth.userData);
+  const user = authUserData || {};
+  const navigate = useNavigate()
 
-  const getInitials = (name) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const handleAddComment = () => {
-    if (!comment.trim()) return;
-    const newComment = {
-      id: Date.now().toString(),
-      username: "John Doe",
-      avatar: "",
-      content: comment,
-      timestamp: "Just now",
-      likes: 0,
+  useEffect(() => {
+    const fetchVideo = async () => {
+      const response = await getVideoById(videoId);
+      if (response.statuscode !== 200) {
+        errorToast("Failed to fetch video");
+        return;
+      }
+      setVideoData(response?.data);
     };
-    setAllComments([newComment, ...allComments]);
-    setComment("");
-  };
+    const fetchComments = async () => {
+      const response = await getVideoComments(videoId);
+
+      if (response.statuscode !== 200) {
+        errorToast("Failed to fetch video comments");
+        return;
+      }
+      setComments(response?.data?.comments);
+    };
+
+    const fetchRelatedVideos = async () => {
+      setIsLoadingRelated(true)
+      const response = await getAllVideos({
+        query: "",
+        sortBy: "createdAt",
+        sortType: "asc",
+        userId: "",
+      });
+
+      if (response.statuscode !== 200) {
+        errorToast("Failed to fetch related videos");
+        return;
+      }
+      setRelatedVideos(response?.data?.docs?.filter(v => v._id !== videoId));
+      setIsLoadingRelated(false);
+    };
+
+    window.scrollTo(0,0);
+    fetchVideo();
+    fetchComments();
+    fetchRelatedVideos();
+  }, [videoId]);
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-7xl">
+    <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Video Section */}
-        <div className="lg:col-span-2 space-y-4">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
           {/* Video Player */}
-          <div className="aspect-video bg-black rounded-lg overflow-hidden">
-            <VideoPlayer
-              src="https://cdn.pixabay.com/video/2019/05/06/23354-334950206_large.mp4"
-              poster="https://cdn.pixabay.com/photo/2017/03/22/17/37/flower-2163199_1280.jpg" // optional
-            />
+          <div className="relative aspect-video rounded-xl overflow-hidden bg-black">
+            <VideoPlayer src={videoData?.videofile} />
           </div>
 
-          {/* Video Info */}
+          {/* Video Info & Channel */}
           <div className="space-y-4">
-            <h1 className="text-xl sm:text-2xl font-bold">
-              Building Modern React Apps with TypeScript and Tailwind CSS
-            </h1>
+            <h1 className="text-2xl font-bold">{videoData?.title}</h1>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="text-sm text-muted-foreground">
-                125,432 views • Dec 15, 2023
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={liked ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setLiked(!liked)}
-                  className="hover-scale"
-                >
-                  👍 {liked ? "1.3K" : "1.2K"}
-                </Button>
-                <Button variant="outline" size="sm" className="hover-scale">
-                  👎
-                </Button>
-                <Button variant="outline" size="sm" className="hover-scale">
-                  🔗 Share
-                </Button>
-              </div>
-            </div>
-
-            {/* Channel Info */}
-            <Card className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src="" alt="TechCoder" />
-                    <AvatarFallback>TC</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="font-semibold">TechCoder</h3>
-                    <p className="text-sm text-muted-foreground">
-                      1.2M subscribers
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant={subscribed ? "outline" : "default"}
-                  onClick={() => setSubscribed(!subscribed)}
-                  className="hover-scale"
-                >
-                  {subscribed ? "Subscribed" : "Subscribe"}
-                </Button>
-              </div>
-              <div className="mt-3">
-                <p className="text-sm text-muted-foreground">
-                  In this comprehensive tutorial, we'll build a modern React
-                  application using TypeScript and Tailwind CSS. Perfect for
-                  developers looking to level up their frontend skills!
-                </p>
-              </div>
-            </Card>
-
-            {/* Comments Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">
-                Comments ({allComments.length})
-              </h3>
-
-              {/* Add Comment */}
-              <div className="flex gap-3">
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src="" alt="John Doe" />
-                  <AvatarFallback>JD</AvatarFallback>
+            <div className="flex justify-between flex-wrap items-center gap-4">
+              <div className="flex items-center space-x-4">
+                <Avatar className="w-12 h-12">
+                  <AvatarImage src={videoData?.owner?.avatar} />
+                  <AvatarFallback>
+                    {videoData?.owner?.fullname?.slice(0, 1).toUpperCase() ||
+                      "?"}
+                  </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 space-y-3">
-                  <Textarea
-                    placeholder="Add a comment..."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    className="min-h-[80px] resize-none"
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      disabled={!comment.trim()}
-                      onClick={handleAddComment}
-                    >
-                      Comment
+                <div>
+                  <h3 className="font-semibold">
+                    {videoData?.owner?.fullname}
+                  </h3>
+                  {/* <p className="text-sm text-gray-500">1.2M subscribers</p> */}
+                </div>
+                <Button onClick={() => setIsSubscribed(!isSubscribed)}>
+                  <Bell className="w-4 h-4 mr-2" />
+                  {isSubscribed ? "Subscribed" : "Subscribe"}
+                </Button>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <div className="flex bg-gray-100 rounded-full dark:bg-gray-800">
+                  <Button
+                    onClick={() => {
+                      setIsLiked(!isLiked);
+                      if (isDisliked) setIsDisliked(false);
+                    }}
+                    className={`rounded-l-full ${isLiked ? "text-blue-600" : ""}`}
+                  >
+                    <ThumbsUp className="w-4 h-4 mr-2" />
+                    125K
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsDisliked(!isDisliked);
+                      if (isLiked) setIsLiked(false);
+                    }}
+                    className={`rounded-r-full ${isDisliked ? "text-red-600" : ""}`}
+                  >
+                    <ThumbsDown className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                <Button variant="ghost">
+                  <Share className="w-4 h-4 mr-2" /> Share
+                </Button>
+                <Button variant="ghost">
+                  <Download className="w-4 h-4 mr-2" /> Download
+                </Button>
+                <Button variant="ghost">
+                  <Flag className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Description */}
+            <Card className="p-4 text-sm text-gray-600 dark:text-gray-400">
+              {videoData?.views} views •{" "}
+              {videoData?.createdAt
+                ? formatDistanceToNow(new Date(videoData.createdAt), {
+                    addSuffix: true,
+                  })
+                : "just now"}
+              <br />
+              {videoData?.description}
+            </Card>
+          </div>
+
+          {/* Comments */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold">Comments ({comments.length})</h2>
+            <div className="flex space-x-3">
+              <Avatar>
+                <AvatarImage src={user?.data?.avatar} />
+                <AvatarFallback>
+                  {" "}
+                  {user?.data?.fullname?.slice(0, 1).toUpperCase()}{" "}
+                </AvatarFallback>
+              </Avatar>
+              <input
+                type="text"
+                placeholder="Add a comment..."
+                className="w-full border-b border-gray-300 bg-transparent focus:outline-none py-2"
+              />
+            </div>
+
+            {comments?.map((comment) => (
+              <div key={comment?._id} className="flex space-x-3 mt-4">
+                <Avatar>
+                  <AvatarImage src={comment?.owner?.avatar} />
+                  <AvatarFallback>
+                    {comment?.owner?.fullname?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-semibold">
+                      {comment?.owner?.username}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      •{" "}
+                      {comment.createdAt
+                        ? formatDistanceToNow(new Date(comment?.createdAt), {
+                            addSuffix: true,
+                          })
+                        : "just now"}
+                    </span>
+                  </div>
+                  <p>{comment?.content}</p>
+                  <div className="flex space-x-2 text-sm text-gray-500 mt-1">
+                    <Button variant="ghost" size="sm">
+                      <ThumbsUp className="w-3 h-3 mr-1" />
+                      {comment.likes}
                     </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setComment("")}
-                    >
-                      Cancel
+                    <Button variant="ghost" size="sm">
+                      <ThumbsDown className="w-3 h-3" />
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                      Reply
                     </Button>
                   </div>
                 </div>
               </div>
-
-              {/* Comments List */}
-              <div className="space-y-4">
-                {allComments.map((comment) => (
-                  <div key={comment.id} className="flex gap-3 animate-fade-in">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage
-                        src={comment.avatar}
-                        alt={comment.username}
-                      />
-                      <AvatarFallback>
-                        {getInitials(comment.username)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm">
-                          {comment.username}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {comment.timestamp}
-                        </span>
-                      </div>
-                      <p className="text-sm mb-2">{comment.content}</p>
-                      <div className="flex items-center gap-4">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                        >
-                          👍 {comment.likes}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                        >
-                          👎
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-0 text-xs"
-                        >
-                          Reply
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
         {/* Sidebar */}
         <div className="space-y-4">
-          <h3 className="font-semibold">Up Next</h3>
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Card
-                key={i}
-                className="p-3 cursor-pointer hover:bg-muted/50 transition-colors hover-scale"
-              >
-                <div className="flex gap-3">
-                  <div className="aspect-video w-32 bg-muted rounded-lg overflow-hidden flex-shrink-0">
-                    <VideoPlayer src="https://videos.pexels.com/video-files/4582328/4582328-hd_1920_1080_30fps.mp4"/>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm line-clamp-2 mb-1">
-                      Related Video Title {i + 1}
-                    </h4>
-                    <p className="text-xs text-muted-foreground">
-                      Channel Name
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      50K views • 1 day ago
-                    </p>
-                  </div>
+          <h3 className="font-semibold">Related Videos</h3>
+
+          {isLoadingRelated
+            ? Array.from({ length: 5 }).map((_, idx) => (
+                <RelatedVideoSkeleton key={idx} />
+              ))
+            : relatedVideos.map((video) => (
+                <div
+                  key={video._id}
+                  className="flex space-x-3"
+                  onClick={() => navigate(`/watch/${video._id}`)}
+                >
+                  <RelatedVideoCard
+                    {...video}
+                    videoId={video._id}
+                    videoUrl={video.videofile}
+                    fullname={video.owner.fullname}
+                    timestamp={formatDistanceToNow(new Date(video.createdAt), {
+                      addSuffix: true,
+                    })}
+                  />
                 </div>
-              </Card>
-            ))}
-          </div>
+              ))}
         </div>
       </div>
     </div>
