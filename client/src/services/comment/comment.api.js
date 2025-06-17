@@ -19,8 +19,6 @@ const addCommentOnVideo = async (videoId, comment) => {
     if (![200, 201].includes(res.status)) {
       return console.log("Failed to add comment on video");
     }
-
-    successToast("Comment added successfully");
     return res.data;
   } catch (error) {
     return console.log(error?.response?.data?.message);
@@ -44,8 +42,6 @@ const updateVideoComment = async (commentId, comment) => {
     if (res.status !== 200) {
       return console.log("Failed to update comment on video");
     }
-
-    successToast("Comment updated successfully");
     return res.data;
   } catch (error) {
     return console.log(error?.response?.data?.message);
@@ -63,8 +59,6 @@ const deleteVideoComment = async (commentId) => {
     if (res.status !== 200) {
       return console.log("Failed to delete comment on video");
     }
-
-    successToast("Comment deleted successfully");
     return res.data;
   } catch (error) {
     return console.log(error?.response?.data?.message);
