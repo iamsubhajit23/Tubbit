@@ -97,8 +97,6 @@ const updateVideoComment = asyncHandler(async (req, res) => {
     throw new apiError(404, "No comment found for this comment id");
   }
 
-  console.log("updatedComment: ", updatedComment.content);
-
   return res
     .status(200)
     .json(
@@ -161,10 +159,6 @@ const getVideoComments = asyncHandler(async (req, res) => {
   };
 
   const result = await Comment.paginate({ video: videoId }, options);
-
-  if (!result.docs || result.docs.length === 0) {
-    throw new apiError(404, "No comments found for this video");
-  }
 
   return res.status(200).json(
     new apiResponse(
