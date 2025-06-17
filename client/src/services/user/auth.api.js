@@ -1,6 +1,7 @@
 import api from "../api.js";
 import successToast from "../../utils/notification/success.js";
 import { apiErrorHandler } from "../../utils/apiErrorHandler.js";
+import errorToast from "../../utils/notification/error.js";
 
 const signUp = async (credentials) => {
   try {
@@ -36,7 +37,8 @@ const signIn = async (credentials) => {
     const { username, email, password } = credentials;
 
     if ([username, email, password].some((field) => field?.trim() === "")) {
-      return apiErrorHandler(null, "Missing required fields");
+      errorToast("Missing required fields");
+      return;
     }
 
     const res = await api.post("/user/login", {
@@ -46,10 +48,9 @@ const signIn = async (credentials) => {
     });
 
     if (res.status !== 200) {
-      return apiErrorHandler(null, "Signin failed. Please try again");
+      errorToast("Signin failed. Please try again");
     }
-
-    successToast("Signin successfull");
+    successToast("Signin Successfull");
     return res;
   } catch (error) {
     return apiErrorHandler(error, "Signin failed");
