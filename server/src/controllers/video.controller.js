@@ -16,25 +16,25 @@ const uploadVideo = asyncHandler(async (req, res) => {
   const thumbnailLocalPath = req.files?.thumbnail[0]?.path;
 
   if (!videoLocalPath) {
-    deleteLocalFile(thumbnailLocalPath)
+    deleteLocalFile(thumbnailLocalPath);
     throw new apiError(401, "Video is required");
   }
 
   if (!title) {
-    deleteLocalFile(thumbnailLocalPath)
-    deleteLocalFile(videoLocalPath)
+    deleteLocalFile(thumbnailLocalPath);
+    deleteLocalFile(videoLocalPath);
     throw new apiError(401, "Title is required!");
   }
 
   if (!thumbnailLocalPath) {
-    deleteLocalFile(videoLocalPath)
+    deleteLocalFile(videoLocalPath);
     throw new apiError(401, "Thumbnail is required");
   }
 
   const user = await User.findById(req.user._id);
   if (!user) {
-    deleteLocalFile(thumbnailLocalPath)
-    deleteLocalFile(videoLocalPath)
+    deleteLocalFile(thumbnailLocalPath);
+    deleteLocalFile(videoLocalPath);
     throw new apiError(401, "User not found with this user id");
   }
 
@@ -79,12 +79,15 @@ const uploadVideo = asyncHandler(async (req, res) => {
 });
 
 const getVideoById = asyncHandler(async (req, res) => {
-  const { videoId } = req.params; // get request from url(params)
+  const { videoId } = req.params;
   if (!videoId) {
     throw new apiError(400, "videoId is required");
   }
 
-  const video = await Video.findById(videoId);
+  const video = await Video.findById(videoId).populate(
+    "owner",
+    "fullname avatar"
+  );
 
   if (!video) {
     throw new apiError(404, "No Video found with this Video Id!");
@@ -182,17 +185,17 @@ const updateThumbnail = asyncHandler(async (req, res) => {
   const thumbnailLocalPath = req.file?.path;
 
   if (!videoId) {
-    deleteLocalFile(thumbnailLocalPath)
+    deleteLocalFile(thumbnailLocalPath);
     throw new apiError(400, "Video id is required");
   }
   if (!thumbnailLocalPath) {
-    deleteLocalFile(thumbnailLocalPath)
+    deleteLocalFile(thumbnailLocalPath);
     throw new apiError(400, "Thumbnail is required");
   }
 
   const video = await Video.findById(videoId);
   if (!video) {
-    deleteLocalFile(thumbnailLocalPath)
+    deleteLocalFile(thumbnailLocalPath);
     throw new apiError(400, "No video find with this video id");
   }
 
