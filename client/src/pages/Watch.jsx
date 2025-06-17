@@ -1,4 +1,4 @@
-import { useState, useEffect,} from "react";
+import { useState, useEffect } from "react";
 import {
   ThumbsUp,
   ThumbsDown,
@@ -23,6 +23,8 @@ import errorToast from "../utils/notification/error.js";
 import { getAllVideos, getVideoById } from "../services/video/video.api.js";
 import RelatedVideoCard from "../components/RelatedVideoCard.jsx";
 import RelatedVideoSkeleton from "../components/RelatedVideoSkeleton.jsx";
+import CommentBox from "../components/comment/CommentBox.jsx";
+import CommentControl from "../components/comment/CommentControl.jsx";
 
 const Watch = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -33,9 +35,10 @@ const Watch = () => {
   const [relatedVideos, setRelatedVideos] = useState([]);
   const [isLoadingRelated, setIsLoadingRelated] = useState(true);
   const { videoId } = useParams();
+  const authStatus = useSelector((state) => state.auth.status);
   const authUserData = useSelector((state) => state.auth.userData);
   const user = authUserData || {};
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -46,6 +49,30 @@ const Watch = () => {
       }
       setVideoData(response?.data);
     };
+
+    const fetchRelatedVideos = async () => {
+      setIsLoadingRelated(true);
+      const response = await getAllVideos({
+        query: "",
+        sortBy: "views",
+        sortType: "desc",
+        userId: "",
+      });
+
+      if (response.statuscode !== 200) {
+        errorToast("Failed to fetch related videos");
+        return;
+      }
+      setRelatedVideos(response?.data?.docs?.filter((v) => v._id !== videoId));
+      setIsLoadingRelated(false);
+    };
+
+    window.scrollTo(0, 0);
+    fetchVideo();
+    fetchRelatedVideos();
+  }, [videoId]);
+
+  useEffect(() => {
     const fetchComments = async () => {
       const response = await getVideoComments(videoId);
 
@@ -55,29 +82,8 @@ const Watch = () => {
       }
       setComments(response?.data?.comments);
     };
-
-    const fetchRelatedVideos = async () => {
-      setIsLoadingRelated(true)
-      const response = await getAllVideos({
-        query: "",
-        sortBy: "createdAt",
-        sortType: "asc",
-        userId: "",
-      });
-
-      if (response.statuscode !== 200) {
-        errorToast("Failed to fetch related videos");
-        return;
-      }
-      setRelatedVideos(response?.data?.docs?.filter(v => v._id !== videoId));
-      setIsLoadingRelated(false);
-    };
-
-    window.scrollTo(0,0);
-    fetchVideo();
     fetchComments();
-    fetchRelatedVideos();
-  }, [videoId]);
+  }, [videoId, comments]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -164,46 +170,60 @@ const Watch = () => {
 
           {/* Comments */}
           <div className="space-y-4">
-            <h2 className="text-xl font-bold">Comments ({comments.length})</h2>
-            <div className="flex space-x-3">
-              <Avatar>
-                <AvatarImage src={user?.data?.avatar} />
-                <AvatarFallback>
-                  {" "}
-                  {user?.data?.fullname?.slice(0, 1).toUpperCase()}{" "}
-                </AvatarFallback>
-              </Avatar>
-              <input
-                type="text"
-                placeholder="Add a comment..."
-                className="w-full border-b border-gray-300 bg-transparent focus:outline-none py-2"
-              />
-            </div>
+            <h2 className="text-xl font-bold">{comments.length} Comments </h2>
+            {authStatus && (
+              <div className="flex space-x-3">
+                <Avatar>
+                  <AvatarImage src={user?.data?.avatar} />
+                  <AvatarFallback>
+                    {" "}
+                    {user?.data?.fullname?.slice(0, 1).toUpperCase()}{" "}
+                  </AvatarFallback>
+                </Avatar>
+                <CommentBox videoId={videoId} setComments={setComments} />
+              </div>
+            )}
 
             {comments?.map((comment) => (
               <div key={comment?._id} className="flex space-x-3 mt-4">
+                {/* Avatar */}
                 <Avatar>
                   <AvatarImage src={comment?.owner?.avatar} />
                   <AvatarFallback>
                     {comment?.owner?.fullname?.[0]}
                   </AvatarFallback>
                 </Avatar>
+
+                {/* Comment body */}
                 <div className="flex-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-semibold">
-                      {comment?.owner?.username}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      •{" "}
-                      {comment.createdAt
-                        ? formatDistanceToNow(new Date(comment?.createdAt), {
-                            addSuffix: true,
-                          })
-                        : "just now"}
-                    </span>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold">
+                        {comment?.owner?.username}
+                      </span>
+                      <span className="text-sm  text-muted-foreground">
+                        •{" "}
+                        {comment.updatedAt
+                          ? formatDistanceToNow(new Date(comment?.updatedAt), {
+                              addSuffix: true,
+                            })
+                          : "just now"}
+                      </span>
+                    </div>
+
+                    {/* 🎯 Comment menu */}
+                    <CommentControl
+                      comment={comment}
+                      authUserId={user?.data?._id}
+                      setComments={setComments}
+                    />
                   </div>
-                  <p>{comment?.content}</p>
-                  <div className="flex space-x-2 text-sm text-gray-500 mt-1">
+
+                  {/* Comment content */}
+                  <p className="mt-1 text-sm leading-snug">{comment?.content}</p>
+
+                  {/* Actions */}
+                  <div className="flex space-x-2 text-sm text-muted-foreground mt-1">
                     <Button variant="ghost" size="sm">
                       <ThumbsUp className="w-3 h-3 mr-1" />
                       {comment.likes}
