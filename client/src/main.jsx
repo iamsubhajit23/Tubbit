@@ -38,7 +38,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                   <Route path="/" element={<Home />} />
                   <Route path="/upload-video" element={<UploadVideo />} />
                   <Route path="/create-tweet" element={<CreateTweet />} />
-                  <Route path="/watch" element={<Watch />} />
+                  <Route path="/watch/:videoId" element={<Watch />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/tweets" element={<Tweets />} />
                   <Route path="/tweet/:id" element={<Tweet />} />
