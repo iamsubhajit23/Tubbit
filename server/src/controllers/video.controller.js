@@ -102,14 +102,22 @@ const getVideoById = asyncHandler(async (req, res) => {
 });
 
 const getAllVideos = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+  const {
+    page = 1,
+    limit = 10,
+    query,
+    sortBy = "views",
+    sortType = "desc",
+    userId,
+  } = req.query;
+
+  const sortOptions = {};
+  sortOptions[sortBy] = sortType === "desc" ? -1 : 1;
 
   const options = {
     page: parseInt(page),
     limit: parseInt(limit),
-    sort: {
-      [sortBy]: sortType === "desc" ? -1 : 1,
-    },
+    sort: sortOptions,
   };
 
   const match = {
