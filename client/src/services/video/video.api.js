@@ -106,13 +106,9 @@ const getAllVideos = async (filters) => {
       },
     });
 
-    if (res.status !== 200) {
-      return apiErrorHandler(null, "Failed to fetch videos. Try again");
-    }
-
     return res.data;
   } catch (error) {
-    return apiErrorHandler(error, "Failed to fetch videos");
+    return console.log("Failed to fetch videos")
   }
 };
 
