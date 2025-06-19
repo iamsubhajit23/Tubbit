@@ -115,7 +115,7 @@ const getTweetById = asyncHandler(async (req, res) => {
     throw new apiError(400, "Valid tweet id is required");
   }
 
-  const existingTweet = await Tweet.findById(tweetId);
+  const existingTweet = await Tweet.findById(tweetId).populate("owner", "username fullname avatar");
 
   if (!existingTweet) {
     throw new apiError(404, "Not found any tweet with this tweet id");
@@ -138,31 +138,75 @@ const getTweetById = asyncHandler(async (req, res) => {
     );
 });
 
-const getUserAllTweets = asyncHandler(async (req, res) => {
-  const userId = req.params.userId || req.user._id;
+const getAllTweets = asyncHandler(async (req, res) => {
+  const allowedSortFields = ["views", "createdAt", "likes"];
+  const {
+    page = 1,
+    limit = 10,
+    query,
+    sortBy = "views",
+    sortType = "desc",
+    userId,
+  } = req.query;
 
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    throw new apiError(400, "Valid user id is required");
+  if (userId && !mongoose.Types.ObjectId.isValid(userId)) {
+    return res.status(400).json(new apiResponse(400, null, "Invalid userId"));
   }
 
-  const tweets = await Tweet.find({
-    owner: userId,
-  }).lean();
-
-  if (!tweets || tweets.length === 0) {
-    throw new apiError(404, "No found any tweet for this user id");
+  if (!allowedSortFields.includes(sortBy)) {
+    return res
+      .status(400)
+      .json(new apiResponse(400, null, "Invalid sortBy field"));
   }
 
-  return res.status(200).json(
-    new apiResponse(
-      200,
-      {
-        tweetsCount: tweets.length,
-        tweets,
+  const sortOptions = {};
+  sortOptions[sortBy] = sortType === "desc" ? -1 : 1;
+
+  const options = {
+    page: parseInt(page),
+    limit: parseInt(limit),
+    sort: sortOptions,
+  };
+
+  const match = {
+    ...(query && {
+      content: { $regex: query, $options: "i" },
+    }),
+    ...(userId && { owner: new mongoose.Types.ObjectId(userId) }),
+  };
+
+  const aggregate = Tweet.aggregate([
+    { $match: match },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
       },
-      "Tweets fetched Successfully"
-    )
+    },
+    {
+      $unwind: {
+        path: "$owner",
+        preserveNullAndEmptyArrays: true, 
+      },
+    },
+  ]);
+
+  const { totalDocs, totalPages, docs } = await Tweet.aggregatePaginate(
+    aggregate,
+    options
   );
+
+  return res
+    .status(200)
+    .json(
+      new apiResponse(
+        200,
+        { docs, totalDocs, totalPages },
+        "Tweets fetched successfully"
+      )
+    );
 });
 
 const deleteTweet = asyncHandler(async (req, res) => {
@@ -194,10 +238,4 @@ const deleteTweet = asyncHandler(async (req, res) => {
     .json(new apiResponse(200, { deletedTweet }, "Tweet deleted Successfully"));
 });
 
-export {
-  createTweet,
-  updateTweet,
-  getTweetById,
-  getUserAllTweets,
-  deleteTweet,
-};
+export { createTweet, updateTweet, getTweetById, getAllTweets, deleteTweet };
