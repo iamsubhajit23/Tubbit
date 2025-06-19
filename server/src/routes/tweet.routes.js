@@ -3,16 +3,16 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 import {
   createTweet,
   deleteTweet,
+  getAllTweets,
   getTweetById,
-  getUserAllTweets,
   updateTweet,
 } from "../controllers/tweet.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router();
-router.use(verifyJWT);
 
 router.route("/create").post(
+  verifyJWT,
   upload.fields([
     {
       name: "image",
@@ -22,12 +22,12 @@ router.route("/create").post(
   createTweet
 );
 
-router.route("/update/:tweetId").patch(updateTweet);
+router.route("/update/:tweetId").patch(verifyJWT, updateTweet);
 
-router.route("/delete/:tweetId").delete(deleteTweet);
+router.route("/delete/:tweetId").delete(verifyJWT, deleteTweet);
 
-router.route("/id/:tweetId").get(getTweetById);
+router.route("/id/:tweetId").get(verifyJWT, getTweetById);
 
-router.route("/").get(getUserAllTweets);
+router.route("/").get(getAllTweets);
 
 export default router;
