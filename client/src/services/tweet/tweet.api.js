@@ -81,11 +81,16 @@ const getTweetById = async (tweetId) => {
   }
 };
 
-const getUserAllTweets = async (userId) => {
+const getAllTweets = async (filters) => {
   try {
-    const endpoint = userId ? `/tweet/${userId}` : `/tweet`;
-
-    const res = await api.get(`/tweet/${endpoint}`);
+    const res = await api.get("/tweet/", {
+      params: {
+        query: filters.query || "",
+        sortBy: filters.sortBy || "createdAt",
+        sortType: filters.sortType || "desc",
+        userId: filters.userId || "",
+      },
+    });
 
     if (res.status !== 200) {
       return console.log("SERVICES :: ERROR: Failed to fetch tweets");
@@ -97,10 +102,4 @@ const getUserAllTweets = async (userId) => {
   }
 };
 
-export {
-  createTweet,
-  updateTweet,
-  deleteTweet,
-  getTweetById,
-  getUserAllTweets,
-};
+export { createTweet, updateTweet, deleteTweet, getTweetById, getAllTweets };
