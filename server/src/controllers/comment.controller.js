@@ -308,9 +308,9 @@ const getTweetComments = asyncHandler(async (req, res) => {
 
   const existingTweet = await Tweet.findById(tweetId);
 
-  if (!existingTweet) {
-    throw new apiError(404, "No tweet found with this tweet id");
-  }
+  // if (!existingTweet) {
+  //   throw new apiError(404, "No tweet found with this tweet id");
+  // }
 
   const options = {
     page: parseInt(page, 10),
@@ -329,9 +329,9 @@ const getTweetComments = asyncHandler(async (req, res) => {
     options
   );
 
-  if (!result.docs || result.docs.length === 0) {
-    throw new apiError(404, "No comments found for this tweet");
-  }
+  // if (!result.docs || result.docs.length === 0) {
+  //   throw new apiError(404, "No comments found for this tweet");
+  // }
 
   return res.status(200).json(
     new apiResponse(
