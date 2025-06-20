@@ -100,8 +100,6 @@ const addCommentOnTweet = async (tweetId, comment) => {
     if (![200, 201].includes(res.status)) {
       return console.log("Failed to add comment on tweet");
     }
-
-    successToast("Comment added successfully");
     return res.data;
   } catch (error) {
     return console.log(error?.response?.data?.message);
