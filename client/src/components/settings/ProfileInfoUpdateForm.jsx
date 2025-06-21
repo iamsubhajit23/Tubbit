@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Save } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 import { Button } from "../ui/Button.jsx";
 import { Input } from "../ui/Input.jsx";
 import { Label } from "../ui/Label.jsx";
@@ -10,47 +11,44 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/Card.jsx";
+import { updateUserDetails } from "../../services/user/profile.api.js";
 import successToast from "../../utils/notification/success.js";
 import errorToast from "../../utils/notification/error.js";
+import { login as storeLogin } from "../../store/AuthSlice.js";
 
-const ProfileInfoUpdateForm = ({ initialName, initialEmail }) => {
-  const { toast } = useToast();
-  const [name, setName] = useState(initialName);
-  const [email, setEmail] = useState(initialEmail);
+const ProfileInfoUpdateForm = () => {
+  const authUserData = useSelector((state) => state.auth.userData);
+  const user = authUserData || {};
+  const dispatch = useDispatch();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsUpdating(true);
-
-    try {
-      const response = await fetch("/api/user/profile", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ name, email }),
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Profile Updated",
-          description:
-            "Your profile information has been updated successfully.",
-        });
-      } else {
-        throw new Error("Failed to update profile");
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
+  useEffect(() => {
+    if (user) {
+      setName(user.data?.fullname || "");
+      setEmail(user.data?.email || "");
     }
+  }, [user]);
+
+  const isNameChanged = name.trim() !== (user?.data?.fullname?.trim() || "");
+  const isEmailChanged = email.trim() !== (user?.data?.email?.trim() || "");
+  const isFormChanged = isNameChanged || isEmailChanged;
+
+  const handleSubmit = async () => {
+    setIsUpdating(true);
+    const res = await updateUserDetails({ fullname: name, email });
+
+    if (res.statuscode !== 200) {
+      setIsUpdating(false);
+      errorToast("Failed to update your details. Please try again");
+      return;
+    }
+    dispatch(storeLogin({ userData: res }));
+    setName(res.data?.fullname);
+    setEmail(res.data?.email);
+    setIsUpdating(false);
+    successToast("Your details updated successfully");
   };
 
   return (
@@ -70,7 +68,6 @@ const ProfileInfoUpdateForm = ({ initialName, initialEmail }) => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your name"
-                required
               />
             </div>
             <div className="space-y-2">
@@ -81,11 +78,10 @@ const ProfileInfoUpdateForm = ({ initialName, initialEmail }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                required
               />
             </div>
           </div>
-          <Button type="submit" disabled={isUpdating}>
+          <Button type="submit" disabled={isUpdating || !isFormChanged}>
             <Save className="w-4 h-4 mr-2" />
             {isUpdating ? "Updating..." : "Update Profile"}
           </Button>
