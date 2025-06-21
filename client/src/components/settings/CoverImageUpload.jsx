@@ -1,17 +1,26 @@
-import React, { useState } from 'react';
-import { Camera, Upload } from 'lucide-react';
-import { Button } from '../ui/Button.jsx';
-import { Input } from '../ui/Input.jsx';
-import { Label } from '../ui/Label.jsx';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card.jsx';
-import successToast from "../../utils/notification/success.js"; 
+import React, { useState } from "react";
+import { Camera, Upload } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { Button } from "../ui/Button.jsx";
+import { Input } from "../ui/Input.jsx";
+import { Label } from "../ui/Label.jsx";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/Card.jsx";
+import { updateCoverImage } from "../../services/user/profile.api.js";
+import successToast from "../../utils/notification/success.js";
 import errorToast from "../../utils/notification/error.js";
+import { login as storeLogin } from "../../store/AuthSlice.js";
 
 const CoverImageUpload = () => {
-  const { toast } = useToast();
   const [coverImage, setCoverImage] = useState(null);
-  const [coverPreview, setCoverPreview] = useState('');
+  const [coverPreview, setCoverPreview] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const dispatch = useDispatch();
 
   const handleCoverChange = (e) => {
     const file = e.target.files?.[0];
@@ -26,58 +35,33 @@ const CoverImageUpload = () => {
   };
 
   const handleUpload = async () => {
-    if (!coverImage) return;
-
     setIsUploading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append('coverImage', coverImage);
+    const res = await updateCoverImage(coverImage);
 
-      // API integration point - replace with actual API call
-      const response = await fetch('/api/user/cover', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-        body: formData,
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Cover Image Updated",
-          description: "Your cover image has been updated successfully.",
-        });
-        setCoverImage(null);
-      } else {
-        throw new Error('Failed to update cover image');
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update cover image. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploading(false);
+    if (res.statuscode !== 200) {
+      setIsUploading(false)
+      errorToast("Failed to update your cover image. Please try again");
+      return;
     }
+    dispatch(storeLogin({ userData: res }));
+    setIsUploading(false);
+    successToast("Your details updated successfully");
   };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Cover Image</CardTitle>
-        <CardDescription>
-          Upload a cover image for your profile
-        </CardDescription>
+        <CardDescription>Upload a cover image for your profile</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {coverPreview && (
             <div className="w-full h-32 rounded-lg overflow-hidden bg-muted">
-              <img 
-                src={coverPreview} 
-                alt="Cover preview" 
+              <img
+                src={coverPreview}
+                alt="Cover preview"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -94,14 +78,14 @@ const CoverImageUpload = () => {
               <Button variant="outline" asChild>
                 <span>
                   <Camera className="w-4 h-4 mr-2" />
-                  Choose Cover Image
+                  Update Cover Image
                 </span>
               </Button>
             </Label>
             {coverImage && (
               <Button onClick={handleUpload} disabled={isUploading}>
                 <Upload className="w-4 h-4 mr-2" />
-                {isUploading ? 'Uploading...' : 'Upload'}
+                {isUploading ? "Uploading..." : "Upload"}
               </Button>
             )}
           </div>
