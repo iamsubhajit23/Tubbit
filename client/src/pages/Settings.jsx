@@ -1,5 +1,4 @@
 import { ArrowLeft } from "lucide-react";
-// import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/Button.jsx";
 import { Separator } from "../components/ui/Separator.jsx";
@@ -9,7 +8,6 @@ import CoverImageUpload from "../components/settings/CoverImageUpload.jsx";
 import PasswordChangeForm from "../components/settings/PasswordChangeForm.jsx";
 
 const Settings = () => {
-  // const { user } = useAuth();
   const navigate = useNavigate();
 
   return (
@@ -20,7 +18,7 @@ const Settings = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/")}
             className="hover-scale"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -31,13 +29,10 @@ const Settings = () => {
 
         <div className="space-y-8">
           {/* Profile Info */}
-          <ProfileInfoForm
-            initialName={user?.name || ""}
-            initialEmail={user?.email || ""}
-          />
+          <ProfileInfoForm />
 
           {/* Avatar Upload */}
-          <AvatarUpload currentAvatar={user?.avatar} userName={user?.name} />
+          <AvatarUpload />
 
           {/* Cover Image Upload */}
           <CoverImageUpload />
