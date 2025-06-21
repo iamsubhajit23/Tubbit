@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import { useState,useEffect} from "react";
 import { Camera, Upload } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 import { Button } from "../ui/Button.jsx";
 import { Input } from "../ui/Input.jsx";
 import { Label } from "../ui/Label.jsx";
@@ -11,13 +12,24 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/Card.jsx";
-import successToast from "../../utils/notification/success.js"; 
+import { updateAvatar } from "../../services/user/profile.api.js";
+import successToast from "../../utils/notification/success.js";
 import errorToast from "../../utils/notification/error.js";
+import { login as storeLogin } from "../../store/AuthSlice.js";
 
-const AvatarUpload = ({ currentAvatar, userName }) => {
+const AvatarUpload = () => {
+  const authUserData = useSelector((state) => state.auth.userData);
+  const user = authUserData || {};
+  const dispatch = useDispatch();
   const [avatar, setAvatar] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(currentAvatar || "");
+  const [avatarPreview, setAvatarPreview] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setAvatarPreview(user.data?.avatar || "");
+    }
+  }, [user]);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
@@ -32,41 +44,20 @@ const AvatarUpload = ({ currentAvatar, userName }) => {
   };
 
   const handleUpload = async () => {
-    if (!avatar) return;
-
     setIsUploading(true);
+    const res = await updateAvatar(avatar);
 
-    try {
-      const formData = new FormData();
-      formData.append("avatar", avatar);
-
-      // Replace with real API endpoint
-      const response = await fetch("/api/user/avatar", {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: formData,
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Avatar Updated",
-          description: "Your avatar has been updated successfully.",
-        });
-        setAvatar(null);
-      } else {
-        throw new Error("Failed to update avatar");
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update avatar. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
+    if (res.statuscode !== 200) {
       setIsUploading(false);
+      errorToast("Failed to update your avatar. Please try again");
+      return;
     }
+
+    dispatch(storeLogin({ userData: res }));
+    setAvatarPreview(res?.data?.avatar);
+    setAvatar(null);
+    setIsUploading(false);
+    successToast("Avatar updated successfully");
   };
 
   return (
@@ -80,7 +71,7 @@ const AvatarUpload = ({ currentAvatar, userName }) => {
           <Avatar className="w-20 h-20">
             <AvatarImage src={avatarPreview} alt="Profile" />
             <AvatarFallback>
-              {userName?.slice(0, 2).toUpperCase()}
+              {user?.data?.fullname?.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="space-y-2">
@@ -96,7 +87,7 @@ const AvatarUpload = ({ currentAvatar, userName }) => {
                 <Button variant="outline" asChild>
                   <span>
                     <Camera className="w-4 h-4 mr-2" />
-                    Choose Image
+                    Update Avatar
                   </span>
                 </Button>
               </Label>
