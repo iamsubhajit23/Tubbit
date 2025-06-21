@@ -19,17 +19,24 @@ import {
 import { Card } from "../components/ui/Card.jsx";
 import VideoPlayer from "../components/VideoPlayer.jsx";
 import { getVideoComments } from "../services/comment/comment.api.js";
-import errorToast from "../utils/notification/error.js";
 import { getAllVideos, getVideoById } from "../services/video/video.api.js";
 import RelatedVideoCard from "../components/RelatedVideoCard.jsx";
 import RelatedVideoSkeleton from "../components/RelatedVideoSkeleton.jsx";
 import CommentBox from "../components/comment/CommentBox.jsx";
 import CommentControl from "../components/comment/CommentControl.jsx";
+import {
+  toggleLikeOnVideo,
+  getLikesOnVideo,
+} from "../services/like/like.api.js";
+import successToast from "../utils/notification/success.js";
+import errorToast from "../utils/notification/error.js";
+import warningToast from "../utils/notification/warning.js";
 
 const Watch = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
+  const [videoLikesCount, setVideoLikesCount] = useState(0);
   const [videoData, setVideoData] = useState();
   const [comments, setComments] = useState([]);
   const [relatedVideos, setRelatedVideos] = useState([]);
@@ -80,10 +87,75 @@ const Watch = () => {
         errorToast("Failed to fetch video comments");
         return;
       }
+
       setComments(response?.data?.comments);
     };
-    fetchComments();
-  }, [videoId, comments]);
+
+    if (videoId) {
+      fetchComments();
+    }
+  }, [videoId]);
+
+  const handleLikeOnVideo = async () => {
+    if (!authStatus) {
+      warningToast("Please log in to like videos");
+      return;
+    }
+
+    const res = await toggleLikeOnVideo(videoId);
+
+    if (![200, 201].includes(res.statuscode)) {
+      errorToast("Failed to like video");
+      return;
+    }
+
+    let updatedLikesCount = videoLikesCount;
+
+    if (isLiked) {
+      updatedLikesCount = Math.max(0, videoLikesCount - 1);
+      setIsLiked(false);
+    } else {
+      updatedLikesCount = videoLikesCount + 1;
+      setIsLiked(true);
+
+      if (isDisliked) {
+        setIsDisliked(false);
+      }
+    }
+
+    setVideoLikesCount(updatedLikesCount);
+  };
+
+  const handleDislikeOnVideo = () => {
+    if (!authStatus) {
+      warningToast("Please log in to dislike videos");
+      return;
+    }
+
+    setIsDisliked((prev) => !prev);
+
+    if (isLiked) {
+      setIsLiked(false);
+      setVideoLikesCount((prev) => Math.max(0, prev - 1));
+    }
+  };
+
+  useEffect(() => {
+    const fetchVideoLikes = async () => {
+      const res = await getLikesOnVideo(videoId);
+
+      if (res.statuscode !== 200) {
+        errorToast("Failed to fetch video likes");
+        return;
+      }
+
+      setVideoLikesCount(res.data.totalLikes);
+    };
+
+    if (videoId) {
+      fetchVideoLikes();
+    }
+  }, [videoId]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -123,20 +195,15 @@ const Watch = () => {
               <div className="flex items-center space-x-2">
                 <div className="flex bg-gray-100 rounded-full dark:bg-gray-800">
                   <Button
-                    onClick={() => {
-                      setIsLiked(!isLiked);
-                      if (isDisliked) setIsDisliked(false);
-                    }}
+                    onClick={handleLikeOnVideo}
                     className={`rounded-l-full ${isLiked ? "text-blue-600" : ""}`}
                   >
                     <ThumbsUp className="w-4 h-4 mr-2" />
-                    125K
+                    {videoLikesCount}
                   </Button>
+
                   <Button
-                    onClick={() => {
-                      setIsDisliked(!isDisliked);
-                      if (isLiked) setIsLiked(false);
-                    }}
+                    onClick={handleDislikeOnVideo}
                     className={`rounded-r-full ${isDisliked ? "text-red-600" : ""}`}
                   >
                     <ThumbsDown className="w-4 h-4" />
@@ -220,7 +287,9 @@ const Watch = () => {
                   </div>
 
                   {/* Comment content */}
-                  <p className="mt-1 text-sm leading-snug">{comment?.content}</p>
+                  <p className="mt-1 text-sm leading-snug">
+                    {comment?.content}
+                  </p>
 
                   {/* Actions */}
                   <div className="flex space-x-2 text-sm text-muted-foreground mt-1">
