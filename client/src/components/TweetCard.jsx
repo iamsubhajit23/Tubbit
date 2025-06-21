@@ -7,6 +7,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/Avatar.jsx";
 import { Card } from "./ui/Card.jsx";
 import { Button } from "./ui/Button.jsx";
@@ -15,6 +16,7 @@ const TweetCard = ({
   tweetId,
   content,
   username,
+  fullname,
   userAvatar,
   timestamp,
   likes = 0,
@@ -27,7 +29,8 @@ const TweetCard = ({
   const [isRetweeted, setIsRetweeted] = useState(false);
   const [likeCount, setLikeCount] = useState(likes);
   const [retweetCount, setRetweetCount] = useState(retweets);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const authStatus = useSelector((state) => state.auth.status);
 
   const getInitials = (name) =>
     name
@@ -36,6 +39,14 @@ const TweetCard = ({
       .join("")
       .toUpperCase()
       .slice(0, 2);
+
+  const handleMouseClick = () => {
+    if (authStatus) {
+      navigate(`/tweet/${tweetId}`)
+    }else{
+      navigate("/auth")
+    }
+  }    
 
   const handleLike = () => {
     setIsLiked((prev) => !prev);
@@ -49,7 +60,7 @@ const TweetCard = ({
 
   return (
     <Card className="p-4 border-0 border-b border-border rounded-none hover:bg-card/80 transition-colors cursor-pointer">
-      <div className="flex gap-3" onClick={() => navigate(`/tweet/${tweetId}`)}>
+      <div className="flex gap-3" onClick={handleMouseClick}>
         <Avatar className="w-10 h-10">
           <AvatarImage src={userAvatar} alt={username} />
           <AvatarFallback>{getInitials(username)}</AvatarFallback>
@@ -59,7 +70,7 @@ const TweetCard = ({
           {/* Header */}
           <div className="flex items-center gap-2 mb-1">
             <span className="font-semibold hover:underline cursor-pointer">
-              {username}
+              {fullname}
             </span>
             <span className="text-muted-foreground">
               @{username.toLowerCase().replace(/\s+/g, "")}
