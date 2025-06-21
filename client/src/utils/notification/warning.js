@@ -1,9 +1,9 @@
-import { toast } from "react-toastify";
+import { toast, Bounce } from "react-toastify";
 
 const warningToast = (message) => {
   return toast.warn(message, {
     position: "bottom-right",
-    autoClose: 2000,
+    autoClose: 1000,
     hideProgressBar: false,
     closeOnClick: true,
     pauseOnHover: true,
