@@ -7,7 +7,7 @@ import { getAllTweets } from "../services/tweet/tweet.api.js";
 const Tweets = () => {
   const [loading, setLoading] = useState(false);
   const [tweets, setTweets] = useState([]);
-
+  
   useEffect(() => {
     const fetchTweets = async () => {
       setLoading(true);
@@ -73,6 +73,7 @@ const Tweets = () => {
               tweetId={tweet?._id}
               content={tweet?.content}
               username={tweet?.owner?.username}
+              fullname={tweet?.owner?.fullname}
               userAvatar={tweet?.owner?.avatar}
               timestamp={formatDistanceToNow(new Date(tweet?.updatedAt), {
                 addSuffix: true,
