@@ -123,9 +123,6 @@ const getTotalLikesOnVideo = asyncHandler(async (req, res) => {
     video: videoId,
   });
 
-  if (!likes) {
-    throw new apiError(404, "Not have any like for this Video");
-  }
 
   return res
     .status(200)
