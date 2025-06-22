@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { errorHandler } from "./middlewares/errorHandler.js";
 
 const app = express();
 
@@ -44,5 +45,7 @@ app.use("/api/v1/playlist/", playlistRouter );
 app.use("/api/v1/tweet/", tweetRouter );
 app.use("/api/v1/dashboard/", dashboardRouter );
 app.use("/api/v1/healthcheck/", healthcheckRouter );
+
+app.use(errorHandler);
 
 export { app };
