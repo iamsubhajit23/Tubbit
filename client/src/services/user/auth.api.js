@@ -36,7 +36,7 @@ const signIn = async (credentials) => {
   try {
     const { username, email, password } = credentials;
 
-    if ([username, email, password].some((field) => field?.trim() === "")) {
+    if ([username, email, password].some((field) => !field?.trim())) {
       errorToast("Missing required fields");
       return;
     }
@@ -47,13 +47,19 @@ const signIn = async (credentials) => {
       password,
     });
 
-    if (res.status !== 200) {
-      errorToast("Signin failed. Please try again");
-    }
-    successToast("Signin Successfull");
+    successToast("Signin Successful");
     return res;
   } catch (error) {
-    return apiErrorHandler(error, "Signin failed");
+    const status = error?.response?.status;
+    const message = error?.response?.data?.message;
+
+    if (status === 429) {
+      errorToast("Too many requests. Please try again after 15 minitues.");
+    } else {
+      errorToast(message || "Signin failed. Please try again.");
+    }
+
+    return null;
   }
 };
 
