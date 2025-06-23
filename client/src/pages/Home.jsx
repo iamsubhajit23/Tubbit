@@ -80,6 +80,7 @@ const Home = () => {
               videoId={video._id}
               videoUrl={video.videofile}
               fullname={video.owner.fullname}
+              username={video.owner.username}
               avatar={video.owner.avatar}
               duration={formatDuration(video.duration)}
               timestamp={formatDistanceToNow(new Date(video.createdAt), {
