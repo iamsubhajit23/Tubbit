@@ -32,14 +32,6 @@ const TweetCard = ({
   const navigate = useNavigate();
   const authStatus = useSelector((state) => state.auth.status);
 
-  const getInitials = (name) =>
-    name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-
   const handleMouseClick = () => {
     if (authStatus) {
       navigate(`/tweet/${tweetId}`)
@@ -63,7 +55,7 @@ const TweetCard = ({
       <div className="flex gap-3" onClick={handleMouseClick}>
         <Avatar className="w-10 h-10">
           <AvatarImage src={userAvatar} alt={username} />
-          <AvatarFallback>{getInitials(username)}</AvatarFallback>
+          <AvatarFallback>{fullname?.slice(0,1).toUpperCase()}</AvatarFallback>
         </Avatar>
 
         <div className="flex-1 min-w-0">
@@ -73,7 +65,7 @@ const TweetCard = ({
               {fullname}
             </span>
             <span className="text-muted-foreground">
-              @{username.toLowerCase().replace(/\s+/g, "")}
+              @{username?.toLowerCase().replace(/\s+/g, "")}
             </span>
             <span className="text-muted-foreground">•</span>
             <span className="text-muted-foreground text-sm">{timestamp}</span>
