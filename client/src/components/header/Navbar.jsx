@@ -48,7 +48,7 @@ export const Navbar = () => {
   };
 
   const handleProfileClick = () => {
-    navigate("/profile");
+    navigate(`/profile/${user?.data?.username}`);
   };
 
   const handleLogout = async () => {
@@ -82,7 +82,10 @@ export const Navbar = () => {
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <div onClick={() => navigate("/")} className="flex items-center space-x-2 cursor-pointer">
+              <div
+                onClick={() => navigate("/")}
+                className="flex items-center space-x-2 cursor-pointer"
+              >
                 <img
                   src={logo}
                   alt="Tubbit Logo"
@@ -169,7 +172,7 @@ export const Navbar = () => {
                       <User className="mr-2 h-4 w-4" />
                       Go to Profile
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick ={() => navigate("/settings")}>
+                    <DropdownMenuItem onClick={() => navigate("/settings")}>
                       <Settings className="mr-2 h-4 w-4" />
                       Settings
                     </DropdownMenuItem>
@@ -212,9 +215,9 @@ export const Navbar = () => {
         )}
       </nav>
       <UploadModal
-          isOpen={isUploadModalOpen}
-          onClose={() => setIsUploadModalOpen(false)}
-        />
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+      />
     </>
   );
 };
