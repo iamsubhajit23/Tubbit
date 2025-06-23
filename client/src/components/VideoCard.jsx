@@ -10,16 +10,20 @@ const VideoCard = ({
   videoUrl,
   title,
   fullname,
+  username,
   avatar,
   views,
   timestamp,
   duration,
+  hoverToPlay = true,
 }) => {
   const videoRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
   const navigate = useNavigate();
+
+  console.log("username", username)
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -55,22 +59,13 @@ const VideoCard = ({
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
-  const getInitials = (name) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   return (
     <Card className="group cursor-pointer overflow-hidden border-0 bg-card/50 hover:bg-card transition-all duration-300 hover:shadow-lg hover-scale">
       {/* video or thumbnail */}
       <div
         className="relative aspect-video overflow-hidden rounded-t-lg"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        onMouseEnter={hoverToPlay? handleMouseEnter: undefined}
+        onMouseLeave={hoverToPlay? handleMouseLeave: undefined}
         onClick={handleMouseClick}
       >
         {isHovered ? (
@@ -111,10 +106,10 @@ const VideoCard = ({
       {/* Content */}
       <div className="p-4">
         <div className="flex gap-3">
-          <Avatar className="mt-1 flex-shrink-0 w-8 h-8">
+          <Avatar onClick={() => navigate(`/profile/${username}`)} className="mt-1 flex-shrink-0 w-8 h-8">
             <AvatarImage src={avatar} alt={fullname} />
             <AvatarFallback className="text-xs">
-              {getInitials(fullname)}
+              {fullname?.slice(0,1).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
@@ -122,7 +117,7 @@ const VideoCard = ({
               {title}
             </h3>
             <div className="text-xs text-muted-foreground space-y-1">
-              <p className="hover:text-foreground transition-colors cursor-pointer">
+              <p onClick={() => navigate(`/profile/${username}`)} className="hover:text-foreground transition-colors cursor-pointer">
                 {fullname}
               </p>
               <p>
