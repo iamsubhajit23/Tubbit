@@ -83,13 +83,13 @@ const getCurrentUser = async () => {
   }
 };
 
-const getChannelProfile = async (params) => {
+const getChannelProfile = async (username) => {
   try {
-    if (!params?.username) {
+    if (!username) {
       return apiErrorHandler(null, "Username is required to get profile");
     }
 
-    const res = await api.get(`/user/channel/${params.username}`);
+    const res = await api.get(`/user/channel/${username}`);
 
     return res.data;
   } catch (error) {
