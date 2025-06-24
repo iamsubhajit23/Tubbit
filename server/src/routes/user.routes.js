@@ -1,4 +1,5 @@
 import { Router } from "express";
+import {rateLimit} from "express-rate-limit";
 import {
   changeUserPassword,
   getCurrentUser,
@@ -16,6 +17,12 @@ import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router();
 
+const limiter = rateLimit({
+  max: 3,
+  windowMs: 15 * 60 * 1000,
+  message: {error: 'Too many requests, please try again later.'},
+})
+
 router.route("/register").post(
   upload.fields([
     {
@@ -30,7 +37,7 @@ router.route("/register").post(
   userRegister
 );
 
-router.route("/login").post(userLogIn);
+router.route("/login").post(limiter, userLogIn);
 
 //secure routes
 router.route("/logout").post(verifyJWT, userLogOut);
