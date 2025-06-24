@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Calendar, MapPin, Link as LinkIcon, Pencil } from "lucide-react";
+import { Calendar, MapPin, Link as LinkIcon, Edit, Bell } from "lucide-react";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
 import {
   Tabs,
@@ -18,13 +18,11 @@ import {
 import VideoCard from "../components/VideoCard.jsx";
 import TweetCard from "../components/TweetCard.jsx";
 import { getChannelProfile } from "../services/user/profile.api.js";
-import successToast from "../utils/notification/success.js";
-import errorToast from "../utils/notification/error.js";
 import { getAllVideos } from "../services/video/video.api.js";
 import { getAllTweets } from "../services/tweet/tweet.api.js";
 
 const Profile = () => {
-  const [isFollowing, setIsFollowing] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
   const [userData, setUserData] = useState(null);
   const [userVideos, setUserVideos] = useState([]);
   const [userTweets, setUserTweets] = useState([]);
@@ -33,6 +31,7 @@ const Profile = () => {
   const { username } = useParams();
   const authUserData = useSelector((state) => state.auth.userData);
   const [selfProfile, setSelfProfile] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (authUserData?.data?.username === username) {
@@ -100,7 +99,7 @@ const Profile = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       {/* Profile Header */}
-      <div className="relative mb-8">
+      <div className="container mx-auto px-4">
         <div
           className="h-48 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl mb-4"
           style={{
@@ -110,105 +109,75 @@ const Profile = () => {
           }}
         />
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-end gap-6 -mt-16 sm:-mt-12">
-          <Avatar className="w-20 h-20 border-4 border-white dark:border-gray-800">
-            <AvatarImage
-              src={userData?.avatar}
-              alt={userData?.fullname.slice(0, 1).toUpperCase()}
-            />
-            <AvatarFallback>
-              {userData?.fullname.slice(0, 1).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+        <div className="mb-6">
+          <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex flex-col sm:flex-row gap-4 lg:w-2/3">
+              <Avatar className="w-32 h-32 border-4 border-background bg-background rounded-full">
+                <AvatarImage
+                  src={userData?.avatar}
+                  alt={userData?.fullname.slice(0, 1).toUpperCase()}
+                />
+                <AvatarFallback className="text-4xl font-bold bg-blue-500 text-white">
+                  {userData?.fullname.slice(0, 1).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
 
-          <div className="flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold mb-1">
                   {userData?.fullname}
-                  {selfProfile && (
-                    <button className="text-muted-foreground hover:text-foreground transition-colors">
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                  )}
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                  @{userData?.username}
+                <div className="flex flex-wrap items-center gap-1 text-sm mb-3">
+                  <p className="text-foreground font-semibold">@{userData?.username}</p>
+
+                  <div className="flex flex-wrap gap-1 text-muted-foreground">
+                    <span>• {userData?.subscribersCount} subscribers</span>
+                    <span>
+                      • {userData?.channelSubscribedToCount} subscriptions
+                    </span>
+                    <span>• {userVideos?.length || 0} videos</span>
+                  </div>
+                </div>
+
+                <p className="text-sm text-muted-foreground mb-3 max-w-2xl leading-relaxed">
+                  {userData?.bio ||
+                    `Hello friends, I'm ${userData?.fullname}. Follow for more content.`}
                 </p>
-              </div>
 
-              {!selfProfile && (
-                <div className="flex space-x-3 mt-4 sm:mt-0">
-                  <Button
-                    variant={isFollowing ? "secondary" : "default"}
-                    onClick={() => setIsFollowing(!isFollowing)}
-                  >
-                    {isFollowing ? "Following" : "Follow"}
-                  </Button>
-                  <Button variant="ghost">Message</Button>
+                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-3">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    <span>{userData?.location || "West Bengal, India"}</span>
+                  </div>
+                  {userData?.createdAt && (
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>
+                        Joined{" "}
+                        {format(new Date(userData?.createdAt), "MMMM yyyy")}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-
-            <p className="text-gray-900 dark:text-white mt-4 max-w-2xl">
-              {userData?.bio ||
-                `Hello friends, I'm ${userData?.fullname}. Follow for more content.`}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-6 mt-4 text-sm text-gray-600 dark:text-gray-400">
-              <div className="flex items-center space-x-1">
-                <MapPin className="w-4 h-4" />
-                <span>{userData?.location || "West Bengal, India"}</span>
-              </div>
-              {userData?.website && (
-                <div className="flex items-center space-x-1">
-                  <LinkIcon className="w-4 h-4" />
-                  <a
-                    href={userData?.website}
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    {userData?.website}
-                  </a>
-                </div>
-              )}
-
-              {userData?.createdAt && (
-                <div className="flex items-center space-x-1">
-                  <Calendar className="w-4 h-4" />
-
-                  <span>
-                    Joined {format(new Date(userData?.createdAt), "MMMM yyyy")}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex space-x-6 mt-4">
-              <div>
-                <span className="font-bold text-gray-900 dark:text-white">
-                  {userData?.subscribersCount}
-                </span>
-                <span className="text-gray-600 dark:text-gray-400 ml-1">
-                  Subscribers
-                </span>
-              </div>
-              <div>
-                <span className="font-bold text-gray-900 dark:text-white">
-                  {userData?.channelSubscribedToCount}
-                </span>
-                <span className="text-gray-600 dark:text-gray-400 ml-1">
-                  Subscribe To
-                </span>
-              </div>
-              <div>
-                <span className="font-bold text-gray-900 dark:text-white">
-                  {userVideos?.length || 0}
-                </span>
-                <span className="text-gray-600 dark:text-gray-400 ml-1">
-                  Videos
-                </span>
               </div>
             </div>
+          </div>
+
+          <div className="flex items-start gap-2 lg:w-1/3 lg:justify-end">
+            {selfProfile ? (
+              <Button onClick={() => navigate("/settings")} variant="outline" className="rounded-full px-6">
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Profile
+              </Button>
+            ) : (
+              <Button
+                variant={subscribed ? "outline" : "default"}
+                onClick={() => setSubscribed(!subscribed)}
+                className="bg-black text-white hover:bg-gray-800 rounded-full px-6"
+              >
+                <Bell className="w-4 h-4 mr-2" />
+                {subscribed ? "Subscribed" : "Subscribe"}
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -228,6 +197,7 @@ const Profile = () => {
                 key={video._id}
                 videoId={video._id}
                 avatar={video.owner.avatar}
+                fullname={video.owner.fullname}
                 hoverToPlay={false}
                 duration={formatDuration(video.duration)}
                 timestamp={formatDistanceToNow(new Date(video.createdAt), {
