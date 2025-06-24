@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/Avatar.jsx";
 import { Card } from "./ui/Card.jsx";
 
@@ -22,8 +23,7 @@ const VideoCard = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
   const navigate = useNavigate();
-
-  console.log("username", username)
+  const authStatus = useSelector((state) => state.auth.status);
 
   const handleMouseEnter = () => {
     setIsHovered(true);
@@ -42,9 +42,7 @@ const VideoCard = ({
   };
 
   const handleMouseClick = () => {
-    if (videoRef.current) {
-      navigate(`/watch/${videoId}`);
-    }
+    navigate(`/watch/${videoId}`);
   };
 
   const handleTimeUpdate = () => {
@@ -64,8 +62,8 @@ const VideoCard = ({
       {/* video or thumbnail */}
       <div
         className="relative aspect-video overflow-hidden rounded-t-lg"
-        onMouseEnter={hoverToPlay? handleMouseEnter: undefined}
-        onMouseLeave={hoverToPlay? handleMouseLeave: undefined}
+        onMouseEnter={hoverToPlay ? handleMouseEnter : undefined}
+        onMouseLeave={hoverToPlay ? handleMouseLeave : undefined}
         onClick={handleMouseClick}
       >
         {isHovered ? (
@@ -106,10 +104,15 @@ const VideoCard = ({
       {/* Content */}
       <div className="p-4">
         <div className="flex gap-3">
-          <Avatar onClick={() => navigate(`/profile/${username}`)} className="mt-1 flex-shrink-0 w-8 h-8">
+          <Avatar
+            onClick={() => {
+              authStatus ? navigate(`/profile/${username}`) : navigate("/auth");
+            }}
+            className="mt-1 flex-shrink-0 w-8 h-8"
+          >
             <AvatarImage src={avatar} alt={fullname} />
             <AvatarFallback className="text-xs">
-              {fullname?.slice(0,1).toUpperCase()}
+              {fullname?.slice(0, 1).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
@@ -117,7 +120,10 @@ const VideoCard = ({
               {title}
             </h3>
             <div className="text-xs text-muted-foreground space-y-1">
-              <p onClick={() => navigate(`/profile/${username}`)} className="hover:text-foreground transition-colors cursor-pointer">
+              <p
+                onClick={() => navigate(`/profile/${username}`)}
+                className="hover:text-foreground transition-colors cursor-pointer"
+              >
                 {fullname}
               </p>
               <p>
