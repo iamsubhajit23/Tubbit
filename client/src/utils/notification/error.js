@@ -3,7 +3,7 @@ import { toast, Bounce } from "react-toastify";
 const errorToast = (message) => {
   return toast.error(message, {
     position: "bottom-right",
-    autoClose: 1000,
+    autoClose: 3000,
     hideProgressBar: false,
     closeOnClick: true,
     pauseOnHover: true,
