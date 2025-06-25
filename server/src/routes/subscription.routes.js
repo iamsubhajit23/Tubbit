@@ -7,13 +7,12 @@ import {
 } from "../controllers/subscription.controller.js";
 
 const router = Router();
-router.use(verifyJWT);
 
 router
   .route("/channel/:channelId")
-  .post(toggleSubscription)
+  .post(verifyJWT, toggleSubscription)
   .get(getUserChannelSubscribers);
 
-router.route("/channel").get(getSubscribedChannel);
+router.route("/channel").get(verifyJWT, getSubscribedChannel);
 
 export default router;
