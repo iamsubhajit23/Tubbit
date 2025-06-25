@@ -12,7 +12,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
   }
 
   if (channelId == subscriberId) {
-    throw new apiError(401," Channel and subscriber id can not be same" )
+    throw new apiError(400," Channel and subscriber can not be same" )
   }
 
   const Subscribed = await Subscription.findOne({
@@ -52,10 +52,6 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     channel: channelId,
   }); // return only numbers
 
-  if (!totalSubscriber) {
-    throw new apiError(404, "Not found any subscriber for this channel");
-  }
-
   // const subscribers = await Subscription.find(
   //   {channel: channelId}
   // ).populate("subscriber", "fullname email", )
@@ -86,10 +82,6 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
   const channel = await Subscription.find({
     subscriber: subscriberId,
   }).populate("channel", "fullname username");
-
-  if (!channel.length) {
-    throw new apiError(404, "Not found any subscribed channel");
-  }
 
   return res.status(200).json(
     new apiResponse(
