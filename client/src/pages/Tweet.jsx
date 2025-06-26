@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Heart, MessageCircle, Repeat, Share, ArrowLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useSelector } from "react-redux";
@@ -31,6 +31,7 @@ const Tweet = () => {
   const authStatus = useSelector((state) => state.auth.status);
   const authUserData = useSelector((state) => state.auth.userData);
   const user = authUserData || {};
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTweet = async () => {
@@ -125,7 +126,10 @@ const Tweet = () => {
 
       <Card className="p-6 mb-6">
         <div className="flex gap-3 mb-4">
-          <Avatar className="w-12 h-12">
+          <Avatar
+            onClick={() => navigate(`/profile/${tweetData?.owner?.username}`)}
+            className="w-12 h-12 cursor-pointer"
+          >
             <AvatarImage
               src={tweetData?.owner?.avatar}
               alt={tweetData?.owner?.username}
@@ -136,8 +140,13 @@ const Tweet = () => {
           </Avatar>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-lg">
-                {tweetData?.owner?.username}
+              <span
+                onClick={() =>
+                  navigate(`/profile/${tweetData?.owner?.username}`)
+                }
+                className="font-semibold text-lg hover:underline cursor-pointer"
+              >
+                {tweetData?.owner?.fullname}
               </span>
               <span className="text-muted-foreground">
                 @{tweetData?.owner?.username.toLowerCase().replace(" ", "")}
@@ -217,7 +226,7 @@ const Tweet = () => {
       {authStatus && (
         <Card className="p-4 mb-6">
           <div className="flex gap-3">
-            <Avatar className="w-10 h-10">
+            <Avatar onClick={() => navigate(`/profile/${user?.data?.username}`)} className="w-10 h-10 cursor-pointer">
               <AvatarImage src={user?.data?.avatar} alt="You" />
               <AvatarFallback>
                 {getInitials(user?.data?.fullname)}
@@ -228,7 +237,7 @@ const Tweet = () => {
                 placeholder="Tweet your reply..."
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
-                onKeyDown = {handleKeyDown}
+                onKeyDown={handleKeyDown}
                 className="min-h-20 resize-none border-0 bg-transparent text-base placeholder:text-muted-foreground focus-visible:ring-0"
               />
               <div className="flex justify-end mt-3">
@@ -254,7 +263,7 @@ const Tweet = () => {
             style={{ animationDelay: `${index * 100}ms` }}
           >
             <div className="flex gap-3">
-              <Avatar className="w-10 h-10">
+              <Avatar onClick={() => navigate(`/profile/${reply?.owner?.username}`)} className="w-10 h-10 cursor-pointer">
                 <AvatarImage src={reply?.owner?.avatar} alt="" />
                 <AvatarFallback>
                   {getInitials(reply?.owner?.fullname)}
@@ -262,7 +271,6 @@ const Tweet = () => {
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  
                   <span className="text-muted-foreground">
                     @{reply?.owner?.username.toLowerCase()}
                   </span>
@@ -277,11 +285,19 @@ const Tweet = () => {
                 </div>
                 <p className="mb-2">{reply?.content}</p>
                 <div className="flex items-center gap-4 text-muted-foreground">
-                  <Button variant="ghost" size="sm" className="h-8 w-20 px-0 flex items-center gap-2 hover:text-blue-500 hover:bg-blue-500/10">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-20 px-0 flex items-center gap-2 hover:text-blue-500 hover:bg-blue-500/10"
+                  >
                     <MessageCircle className="h-4 w-4 mr-1" />
                     <span className="text-sm">Reply</span>
                   </Button>
-                  <Button variant="ghost" size="sm" className="h-8 px-0 flex items-center gap-2 hover:text-red-500 hover:bg-red-500/10">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-0 flex items-center gap-2 hover:text-red-500 hover:bg-red-500/10"
+                  >
                     <Heart className="h-4 w-4 mr-1" />
                     <span className="text-sm">{reply.likes}</span>
                   </Button>
