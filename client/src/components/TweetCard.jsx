@@ -34,11 +34,11 @@ const TweetCard = ({
 
   const handleMouseClick = () => {
     if (authStatus) {
-      navigate(`/tweet/${tweetId}`)
-    }else{
-      navigate("/auth")
+      navigate(`/tweet/${tweetId}`);
+    } else {
+      navigate("/auth");
     }
-  }    
+  };
 
   const handleLike = () => {
     setIsLiked((prev) => !prev);
@@ -51,17 +51,23 @@ const TweetCard = ({
   };
 
   return (
-    <Card className="p-4 border-0 border-b border-border rounded-none hover:bg-card/80 transition-colors cursor-pointer">
-      <div className="flex gap-3" onClick={handleMouseClick}>
-        <Avatar className="w-10 h-10">
+    <Card className="p-4 border-0 border-b border-border rounded-none hover:bg-card/80 transition-colors">
+      <div className="flex gap-3">
+        <Avatar
+          onClick={() => navigate(`/profile/${username}`)}
+          className="w-10 h-10 cursor-pointer"
+        >
           <AvatarImage src={userAvatar} alt={username} />
-          <AvatarFallback>{fullname?.slice(0,1).toUpperCase()}</AvatarFallback>
+          <AvatarFallback>{fullname?.slice(0, 1).toUpperCase()}</AvatarFallback>
         </Avatar>
 
         <div className="flex-1 min-w-0">
           {/* Header */}
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-semibold hover:underline cursor-pointer">
+            <span
+              onClick={() => navigate(`/profile/${username}`)}
+              className="font-semibold hover:underline cursor-pointer"
+            >
               {fullname}
             </span>
             <span className="text-muted-foreground">
@@ -78,7 +84,12 @@ const TweetCard = ({
           </div>
 
           {/* Content */}
-          <p className="text-foreground mb-3 whitespace-pre-wrap">{content}</p>
+          <p
+            onClick={handleMouseClick}
+            className="text-foreground mb-3 whitespace-pre-wrap cursor-pointer"
+          >
+            {content}
+          </p>
 
           {/* Images */}
           {imageList.length > 0 && (
@@ -87,7 +98,8 @@ const TweetCard = ({
                 <img
                   src={imageList[0]}
                   alt="Post image"
-                  className="w-full max-h-96 object-cover rounded-2xl"
+                  onClick={handleMouseClick}
+                  className="w-full max-h-96 object-cover rounded-2xl cursor-pointer"
                 />
               ) : (
                 <div className="grid grid-cols-2 gap-1">
