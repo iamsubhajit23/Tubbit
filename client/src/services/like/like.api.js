@@ -72,7 +72,7 @@ const getLikesOnVideo = async (videoId) => {
   }
 };
 
-const getlikedVideos = async () => {
+const getLikedVideos = async () => {
   try {
     const res = await api.get(`/like/liked-videos`);
 
@@ -91,5 +91,5 @@ export {
   toggleLikeOnComment,
   toggleLikeOnTweet,
   getLikesOnVideo,
-  getlikedVideos,
+  getLikedVideos,
 };
