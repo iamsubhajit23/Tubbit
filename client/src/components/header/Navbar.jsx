@@ -20,7 +20,7 @@ import NotificationsDropdown from "../ui/NotificationDropdown.jsx";
 import lightLogo from "../../assets/Tubbit_Logo_final_light.png";
 import darkLogo from "../../assets/Tubbit_Logo_final_dark2.png";
 import { signOut } from "../../services/user/auth.api.js";
-import { logout as storeLogOut } from "../../store/AuthSlice.js";
+import { logout as storeLogOut } from "../../store/slices/AuthSlice.js";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "../ui/Card.jsx";
 import { changePassword } from "../../services/user/profile.api.js";
-import { logout as storeLogout } from "../../store/AuthSlice.js";
+import { logout as storeLogout } from "../../store/slices/AuthSlice.js";
 import successToast from "../../utils/notification/success.js";
 import errorToast from "../../utils/notification/error.js";
 

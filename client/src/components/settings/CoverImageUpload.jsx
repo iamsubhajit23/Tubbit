@@ -14,7 +14,7 @@ import {
 import { updateCoverImage } from "../../services/user/profile.api.js";
 import successToast from "../../utils/notification/success.js";
 import errorToast from "../../utils/notification/error.js";
-import { login as storeLogin } from "../../store/AuthSlice.js";
+import { login as storeLogin } from "../../store/slices/AuthSlice.js";
 
 const CoverImageUpload = () => {
   const [coverImage, setCoverImage] = useState(null);
