@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Calendar, MapPin, Link as LinkIcon, Edit, Bell } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useSelector,useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
 import {
@@ -20,9 +20,10 @@ import TweetCard from "../components/TweetCard.jsx";
 import { getChannelProfile } from "../services/user/profile.api.js";
 import { getAllVideos } from "../services/video/video.api.js";
 import { getAllTweets } from "../services/tweet/tweet.api.js";
+import { toggleSubscription } from "../services/subscription/subscription.api.js";
+import { toggleSubscribedChannel } from "../store/slices/subscriptionSlice.js";
 
 const Profile = () => {
-  const [subscribed, setSubscribed] = useState(false);
   const [userData, setUserData] = useState(null);
   const [userVideos, setUserVideos] = useState([]);
   const [userTweets, setUserTweets] = useState([]);
@@ -32,6 +33,12 @@ const Profile = () => {
   const authUserData = useSelector((state) => state.auth.userData);
   const [selfProfile, setSelfProfile] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const subscribedChannels = useSelector(
+    (state) => state.subscription.subscribedChannels
+  );
+  const isSubscribed = subscribedChannels.includes(userData?._id);
 
   useEffect(() => {
     if (authUserData?.data?.username === username) {
@@ -54,7 +61,7 @@ const Profile = () => {
       setProfileLoading(false);
     };
     fetchUserData();
-  }, [username]);
+  }, [username, isSubscribed]);
 
   useEffect(() => {
     if (!userData?._id) return;
@@ -81,6 +88,16 @@ const Profile = () => {
     fetchUserVideos();
     fetchUserTweets();
   }, [userData]);
+
+  const handleSubscribeButton = async () => {
+    const res = await toggleSubscription(userData?._id);
+    if (res.statuscode !== 200) {
+      errorToast("Failed to toggle subscription!");
+      return;
+    }
+
+    dispatch(toggleSubscribedChannel(userData?._id));
+  };
 
   const formatDuration = (seconds) => {
     const h = Math.floor(seconds / 3600);
@@ -127,7 +144,9 @@ const Profile = () => {
                   {userData?.fullname}
                 </h1>
                 <div className="flex flex-wrap items-center gap-1 text-sm mb-3">
-                  <p className="text-foreground font-semibold">@{userData?.username}</p>
+                  <p className="text-foreground font-semibold">
+                    @{userData?.username}
+                  </p>
 
                   <div className="flex flex-wrap gap-1 text-muted-foreground">
                     <span>• {userData?.subscribersCount} subscribers</span>
@@ -164,18 +183,22 @@ const Profile = () => {
 
           <div className="flex items-start gap-2 lg:w-1/3 lg:justify-end">
             {selfProfile ? (
-              <Button onClick={() => navigate("/settings")} variant="outline" className="rounded-full px-6">
+              <Button
+                onClick={() => navigate("/settings")}
+                variant="outline"
+                className="rounded-full px-6"
+              >
                 <Edit className="w-4 h-4 mr-2" />
                 Edit Profile
               </Button>
             ) : (
               <Button
-                variant={subscribed ? "outline" : "default"}
-                onClick={() => setSubscribed(!subscribed)}
-                className="bg-black text-white hover:bg-gray-800 rounded-full px-6"
+                variant={isSubscribed ? "outline" : "default"}
+                onClick={handleSubscribeButton}
+                className="rounded-full px-6"
               >
                 <Bell className="w-4 h-4 mr-2" />
-                {subscribed ? "Subscribed" : "Subscribe"}
+                {isSubscribed ? "Subscribed" : "Subscribe"}
               </Button>
             )}
           </div>
