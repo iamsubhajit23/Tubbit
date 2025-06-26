@@ -32,33 +32,43 @@ import {
   getSubscribers,
   toggleSubscription,
 } from "../services/subscription/subscription.api.js";
-import successToast from "../utils/notification/success.js";
 import errorToast from "../utils/notification/error.js";
 import warningToast from "../utils/notification/warning.js";
 import { toggleSubscribedChannel } from "../store/slices/subscriptionSlice.js";
+import {
+  toggleLike,
+  toggleDislike,
+  setLikeCount,
+} from "../store/slices/likeSlice.js";
 
 const Watch = () => {
   const [videoData, setVideoData] = useState();
   const [comments, setComments] = useState([]);
   const [relatedVideos, setRelatedVideos] = useState([]);
   const [isLoadingRelated, setIsLoadingRelated] = useState(true);
-  const [videoLikesCount, setVideoLikesCount] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
-  const [isDisliked, setIsDisliked] = useState(false);
   const [subscribersCount, setSubscribersCount] = useState(0);
 
   const { videoId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const authStatus = useSelector((state) => state.auth.status);
   const authUserData = useSelector((state) => state.auth.userData);
   const user = authUserData || {};
+
   const subscribedChannels = useSelector(
     (state) => state.subscription.subscribedChannels
   );
   const isSubscribed = subscribedChannels.includes(videoData?.owner?._id);
 
-  // Fetch video and related videos
+  const { likedVideos, dislikedVideos, likeCounts } = useSelector(
+    (state) => state.like
+  );
+
+  const isLiked = likedVideos.includes(videoId);
+  const isDisliked = dislikedVideos.includes(videoId);
+  const videoLikesCount = likeCounts[videoId] || 0;
+
   useEffect(() => {
     const fetchVideo = async () => {
       const response = await getVideoById(videoId);
@@ -77,10 +87,12 @@ const Watch = () => {
         sortType: "desc",
         userId: "",
       });
+
       if (response.statuscode !== 200) {
         errorToast("Failed to fetch related videos");
         return;
       }
+
       setRelatedVideos(response?.data?.docs?.filter((v) => v._id !== videoId));
       setIsLoadingRelated(false);
     };
@@ -90,39 +102,41 @@ const Watch = () => {
     fetchRelatedVideos();
   }, [videoId]);
 
-  // Fetch comments
   useEffect(() => {
     const fetchComments = async () => {
       const response = await getVideoComments(videoId);
+
       if (response.statuscode !== 200) {
         errorToast("Failed to fetch video comments");
         return;
       }
+
       setComments(response?.data?.comments);
     };
 
-    if (videoId) fetchComments();
+    if (videoId) {
+      fetchComments();
+    }
   }, [videoId]);
 
-  // Fetch likes
   useEffect(() => {
     const fetchVideoLikes = async () => {
       const res = await getLikesOnVideo(videoId);
-      if (res.statuscode !== 200) {
-        errorToast("Failed to fetch video likes");
-        return;
+      if (res.statuscode === 200) {
+        dispatch(setLikeCount({ videoId, count: res.data.totalLikes }));
       }
-      setVideoLikesCount(res.data?.totalLikes);
     };
 
-    if (videoId) fetchVideoLikes();
+    if (videoId) {
+      fetchVideoLikes();
+    }
   }, [videoId]);
 
-  // Fetch subscribers count
   useEffect(() => {
     const fetchSubscribersCount = async () => {
       if (!videoData?.owner?._id) return;
-      const res = await getSubscribers(videoData.owner._id);
+
+      const res = await getSubscribers(videoData?.owner?._id);
       if (res.statuscode === 200) {
         setSubscribersCount(res.data?.totalSubscriber);
       }
@@ -131,49 +145,29 @@ const Watch = () => {
     fetchSubscribersCount();
   }, [videoData]);
 
-  // Handle like button
-  const handleLikeOnVideo = async () => {
+  const handleLike = async () => {
     if (!authStatus) {
       warningToast("Please log in to like videos");
       return;
     }
 
     const res = await toggleLikeOnVideo(videoId);
-    if (![200, 201].includes(res.statuscode)) {
-      errorToast("Failed to like video");
-      return;
-    }
-
-    let updatedLikesCount = videoLikesCount;
-
-    if (isLiked) {
-      updatedLikesCount = Math.max(0, videoLikesCount - 1);
-      setIsLiked(false);
+    if ([200, 201].includes(res.statuscode)) {
+      dispatch(toggleLike({ videoId }));
     } else {
-      updatedLikesCount = videoLikesCount + 1;
-      setIsLiked(true);
-      if (isDisliked) setIsDisliked(false);
+      errorToast("Failed to toggle like");
     }
-
-    setVideoLikesCount(updatedLikesCount);
   };
 
-  // Handle dislike
-  const handleDislikeOnVideo = () => {
+  const handleDislike = () => {
     if (!authStatus) {
       warningToast("Please log in to dislike videos");
       return;
     }
 
-    setIsDisliked((prev) => !prev);
-
-    if (isLiked) {
-      setIsLiked(false);
-      setVideoLikesCount((prev) => Math.max(0, prev - 1));
-    }
+    dispatch(toggleDislike({ videoId }));
   };
 
-  // Handle subscribe toggle
   const handleSubscribeButton = async () => {
     if (!authStatus) {
       warningToast("Please login to subscribe");
@@ -235,6 +229,7 @@ const Watch = () => {
                 <Button
                   variant={isSubscribed ? "outline" : "default"}
                   onClick={handleSubscribeButton}
+                  className="rounded-full px-6"
                 >
                   <Bell className="w-4 h-4 mr-2" />
                   {isSubscribed ? "Subscribed" : "Subscribe"}
@@ -244,7 +239,7 @@ const Watch = () => {
               <div className="flex items-center space-x-2">
                 <div className="flex bg-gray-100 rounded-full dark:bg-gray-800">
                   <Button
-                    onClick={handleLikeOnVideo}
+                    onClick={handleLike}
                     className={`rounded-l-full ${isLiked ? "text-blue-600" : ""}`}
                   >
                     <ThumbsUp className="w-4 h-4 mr-2" />
@@ -252,7 +247,7 @@ const Watch = () => {
                   </Button>
 
                   <Button
-                    onClick={handleDislikeOnVideo}
+                    onClick={handleDislike}
                     className={`rounded-r-full ${isDisliked ? "text-red-600" : ""}`}
                   >
                     <ThumbsDown className="w-4 h-4" />
@@ -288,8 +283,10 @@ const Watch = () => {
           <div className="space-y-4">
             <h2 className="text-xl font-bold">{comments.length} Comments </h2>
             {authStatus && (
-              <div className="flex space-x-3">
-                <Avatar>
+              <div className="flex space-x-3 cursor-pointer">
+                <Avatar
+                  onClick={() => navigate(`/profile/${user?.data?.username}`)}
+                >
                   <AvatarImage src={user?.data?.avatar} />
                   <AvatarFallback>
                     {user?.data?.fullname?.[0]?.toUpperCase()}
@@ -300,8 +297,15 @@ const Watch = () => {
             )}
 
             {comments?.map((comment) => (
-              <div key={comment?._id} className="flex space-x-3 mt-4">
-                <Avatar>
+              <div
+                key={comment?._id}
+                className="flex space-x-3 mt-4 cursor-pointer"
+              >
+                <Avatar
+                  onClick={() =>
+                    navigate(`/profile/${comment?.owner?.username}`)
+                  }
+                >
                   <AvatarImage src={comment?.owner?.avatar} />
                   <AvatarFallback>
                     {comment?.owner?.fullname?.[0]}
@@ -311,7 +315,7 @@ const Watch = () => {
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
-                      <span className="font-semibold">
+                      <span className="text-muted-foreground">
                         {comment?.owner?.username}
                       </span>
                       <span className="text-sm text-muted-foreground">
@@ -323,15 +327,18 @@ const Watch = () => {
                           : "just now"}
                       </span>
                     </div>
+
                     <CommentControl
                       comment={comment}
                       authUserId={user?.data?._id}
                       setComments={setComments}
                     />
                   </div>
+
                   <p className="mt-1 text-sm leading-snug">
                     {comment?.content}
                   </p>
+
                   <div className="flex space-x-2 text-sm text-muted-foreground mt-1">
                     <Button variant="ghost" size="sm">
                       <ThumbsUp className="w-3 h-3 mr-1" />
@@ -353,6 +360,7 @@ const Watch = () => {
         {/* Sidebar */}
         <div className="space-y-4">
           <h3 className="font-semibold">Related Videos</h3>
+
           {isLoadingRelated
             ? Array.from({ length: 5 }).map((_, idx) => (
                 <RelatedVideoSkeleton key={idx} />
