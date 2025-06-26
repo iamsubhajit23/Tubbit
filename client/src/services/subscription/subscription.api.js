@@ -1,5 +1,4 @@
 import api from "../api.js";
-import successToast from "../../utils/notification/success.js";
 import errorToast from "../../utils/notification/error.js";
 
 const toggleSubscription = async (channelId) => {
@@ -35,7 +34,7 @@ const getSubscribedChannel = async () => {
     return res.data;
   } catch (error) {
     const message = error?.response?.data?.message;
-    errorToast(message);
+    console.log(message);
     return null;
   }
 };
