@@ -1,7 +1,7 @@
 {
-  "name": "backend-tutorial",
+  "name": "tubbit-backend",
   "version": "1.0.0",
-  "description": "A backend created by me, learning from hitesh sir",
+  "description": "A Node.js backend for Tubbit, a video and tweet sharing platform",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -10,7 +10,11 @@
   "keywords": [
     "node",
     "javascript",
-    "chai"
+    "backend",
+    "api",
+    "tubbit",
+    "video",
+    "tweet"
   ],
   "author": "Subhajit Dash",
   "license": "ISC",
