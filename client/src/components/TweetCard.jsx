@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/Avatar.jsx";
 import { Card } from "./ui/Card.jsx";
 import { Button } from "./ui/Button.jsx";
+import errorToast from "../utils/notification/error.js";
 
 const TweetCard = ({
   tweetId,
@@ -36,6 +37,7 @@ const TweetCard = ({
     if (authStatus) {
       navigate(`/tweet/${tweetId}`);
     } else {
+      errorToast("Sign in to see tweet");
       navigate("/auth");
     }
   };
