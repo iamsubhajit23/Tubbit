@@ -35,11 +35,7 @@ import {
 import errorToast from "../utils/notification/error.js";
 import warningToast from "../utils/notification/warning.js";
 import { toggleSubscribedChannel } from "../store/slices/subscriptionSlice.js";
-import {
-  toggleLike,
-  toggleDislike,
-  setLikeCount,
-} from "../store/slices/likeSlice.js";
+import { toggleLike } from "../store/slices/likeSlice.js";
 
 const Watch = () => {
   const [videoData, setVideoData] = useState();
@@ -47,6 +43,9 @@ const Watch = () => {
   const [relatedVideos, setRelatedVideos] = useState([]);
   const [isLoadingRelated, setIsLoadingRelated] = useState(true);
   const [subscribersCount, setSubscribersCount] = useState(0);
+  const [isDislike, setIsDislike] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
 
   const { videoId } = useParams();
   const navigate = useNavigate();
@@ -61,13 +60,12 @@ const Watch = () => {
   );
   const isSubscribed = subscribedChannels.includes(videoData?.owner?._id);
 
-  const { likedVideos, dislikedVideos, likeCounts } = useSelector(
-    (state) => state.like
-  );
-
+  const likedVideos = useSelector((state) => state.like.likedVideos);
   const isLiked = likedVideos.includes(videoId);
-  const isDisliked = dislikedVideos.includes(videoId);
-  const videoLikesCount = likeCounts[videoId] || 0;
+
+  useEffect(() => {
+    setLiked(isLiked);
+  }, [isLiked]);
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -123,7 +121,7 @@ const Watch = () => {
     const fetchVideoLikes = async () => {
       const res = await getLikesOnVideo(videoId);
       if (res.statuscode === 200) {
-        dispatch(setLikeCount({ videoId, count: res.data.totalLikes }));
+        setLikeCount(res.data?.totalLikes);
       }
     };
 
@@ -147,25 +145,46 @@ const Watch = () => {
 
   const handleLike = async () => {
     if (!authStatus) {
-      warningToast("Please log in to like videos");
+      warningToast("Please Sign in to like videos");
       return;
     }
 
+    const wasLiked = liked;
     const res = await toggleLikeOnVideo(videoId);
+
     if ([200, 201].includes(res.statuscode)) {
-      dispatch(toggleLike({ videoId }));
+      const toggled = !wasLiked;
+      setLiked(toggled);
+      setIsDislike(false); 
+
+      setLikeCount((prev) => (toggled ? prev + 1 : Math.max(0, prev - 1)));
+
+      dispatch(toggleLike(videoId));
     } else {
       errorToast("Failed to toggle like");
     }
   };
 
-  const handleDislike = () => {
+  const handleDislike = async () => {
     if (!authStatus) {
-      warningToast("Please log in to dislike videos");
+      warningToast("Please Sign in to dislike videos");
       return;
     }
 
-    dispatch(toggleDislike({ videoId }));
+    if (liked) {
+      const res = await toggleLikeOnVideo(videoId);
+
+      if ([200, 201].includes(res.statuscode)) {
+        setLiked(false);
+        setLikeCount((prev) => Math.max(0, prev - 1));
+        dispatch(toggleLike(videoId));
+      } else {
+        errorToast("Failed to dislike video");
+        return;
+      }
+    }
+    
+    setIsDislike((prev) => !prev);
   };
 
   const handleSubscribeButton = async () => {
@@ -240,15 +259,15 @@ const Watch = () => {
                 <div className="flex bg-gray-100 rounded-full dark:bg-gray-800">
                   <Button
                     onClick={handleLike}
-                    className={`rounded-l-full ${isLiked ? "text-blue-600" : ""}`}
+                    className={`rounded-l-full ${liked ? "text-blue-600" : ""}`}
                   >
                     <ThumbsUp className="w-4 h-4 mr-2" />
-                    {videoLikesCount}
+                    {likeCount}
                   </Button>
 
                   <Button
                     onClick={handleDislike}
-                    className={`rounded-r-full ${isDisliked ? "text-red-600" : ""}`}
+                    className={`rounded-r-full ${isDislike ? "text-red-600" : ""}`}
                   >
                     <ThumbsDown className="w-4 h-4" />
                   </Button>
