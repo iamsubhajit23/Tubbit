@@ -1,8 +1,7 @@
-import "./index.css";
-import { Outlet } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
-import { Navbar } from "./components/header/Navbar.jsx";
+import "./index.css";
+
 import { getCurrentUser } from "./services/user/profile.api.js";
 import { login, logout } from "./store/slices/AuthSlice.js";
 import { getSubscribedChannel } from "./services/subscription/subscription.api.js";
@@ -44,11 +43,7 @@ const App = () => {
     fetchLikedVideos();
   }, []);
 
-  return (
-    <>
-      <Navbar />
-      <Outlet />
-    </>
-  );
+  return null;
 };
+
 export default App;
