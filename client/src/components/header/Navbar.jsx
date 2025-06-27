@@ -37,15 +37,12 @@ export const Navbar = () => {
   const authUserData = useSelector((state) => state.auth.userData);
   const user = authUserData || {};
 
-  // Determine which logo to use based on the theme
-  const logo = theme == "dark" ? darkLogo : lightLogo;
+  const logo = theme === "dark" ? darkLogo : lightLogo;
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
-  const handleAuthClick = () => {
-    navigate("/auth");
-  };
+  const handleAuthClick = () => navigate("/auth");
 
   const handleProfileClick = () => {
     navigate(`/profile/${user?.data?.username}`);
@@ -53,10 +50,8 @@ export const Navbar = () => {
 
   const handleLogout = async () => {
     const response = await signOut();
-
-    if (response.status == 200) {
+    if (response.status === 200) {
       logOutDispatch(storeLogOut());
-      setIsMenuOpen(false);
       setIsUploadModalOpen(false);
       navigate("/");
     }
@@ -69,19 +64,14 @@ export const Navbar = () => {
     }
     setIsUploadModalOpen(true);
   };
+
   return (
     <>
       <nav className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b dark:bg-transparent border-gray-200 dark:border-gray-700 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo and Mobile Menu Toggle */}
+            {/* Left: Logo & Menu Icon */}
             <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
               <div
                 onClick={() => navigate("/")}
                 className="flex items-center space-x-2 cursor-pointer"
@@ -108,24 +98,42 @@ export const Navbar = () => {
               </div>
             </div>
 
-            {/* Right Section */}
+            {/* Right Icons */}
             <div className="flex items-center space-x-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleTheme}
-                className="p-2"
-              >
-                {theme === "light" ? (
-                  <Moon className="w-5 h-5" />
-                ) : (
-                  <Sun className="w-5 h-5" />
-                )}
-              </Button>
+              {/* Mobile Search Icon */}
+              {!isMobileSearchOpen ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden"
+                  onClick={() => setIsMobileSearchOpen(true)}
+                >
+                  <Search className="w-5 h-5" />
+                </Button>
+              ) : (
+                <div className="flex items-center space-x-2 w-full max-w-[300px]">
+                  <div className="relative w-full">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Search className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      type="text"
+                      autoFocus
+                      placeholder="Search..."
+                      className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <button
+                      onClick={() => setIsMobileSearchOpen(false)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              )}
 
-              {/* authentication */}
+              {/* Auth Section */}
               {authStatus ? (
-                // User Menu (when logged in)
                 <DropdownMenu>
                   <Button
                     variant="ghost"
@@ -159,8 +167,8 @@ export const Navbar = () => {
                     align="end"
                     forceMount
                   >
-                    <div className="flex items-center justify-start gap-2 p-2">
-                      <div className="flex flex-col space-y-1 leading-none">
+                    <div className="flex items-center gap-2 p-2">
+                      <div className="flex flex-col leading-none">
                         <p className="font-medium">{user?.data?.fullname}</p>
                         <p className="text-xs text-muted-foreground">
                           {user?.data?.email}
@@ -176,6 +184,19 @@ export const Navbar = () => {
                       <Settings className="mr-2 h-4 w-4" />
                       Settings
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={toggleTheme}>
+                      {theme === "light" ? (
+                        <>
+                          <Moon className="mr-2 h-4 w-4" />
+                          Dark Mode
+                        </>
+                      ) : (
+                        <>
+                          <Sun className="mr-2 h-4 w-4" />
+                          Light Mode
+                        </>
+                      )}
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
@@ -184,7 +205,6 @@ export const Navbar = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                // Sign In/Sign Up buttons (when not logged in)
                 <div className="flex items-center space-x-2">
                   <Button variant="ghost" size="sm" onClick={handleAuthClick}>
                     Sign In
@@ -197,23 +217,8 @@ export const Navbar = () => {
             </div>
           </div>
         </div>
-
-        {/* Mobile Search Bar */}
-        {isMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 p-4">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <Input
-                type="text"
-                placeholder="Search videos, users..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-        )}
       </nav>
+
       <UploadModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
