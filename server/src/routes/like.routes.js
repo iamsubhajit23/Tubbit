@@ -9,16 +9,15 @@ import {
 } from "../controllers/like.controller.js";
 
 const router = Router();
-router.use(verifyJWT);
 
-router.route("/toggle-video-like/:videoId").post(toggleLikeOnVideo);
+router.route("/toggle-video-like/:videoId").post(verifyJWT, toggleLikeOnVideo);
 
-router.route("/toggle-comment-like/:commentId").post(toggleLikeOnComment);
+router.route("/toggle-comment-like/:commentId").post(verifyJWT, toggleLikeOnComment);
 
-router.route("/toggle-tweet-like/:tweetId").post(toggleLikeOnTweet);
+router.route("/toggle-tweet-like/:tweetId").post(verifyJWT, toggleLikeOnTweet);
 
 router.route("/video-likes/:videoId").get(getTotalLikesOnVideo);
 
-router.route("/liked-videos").get(getLikedVideos);
+router.route("/liked-videos").get(verifyJWT, getLikedVideos);
 
 export default router;
