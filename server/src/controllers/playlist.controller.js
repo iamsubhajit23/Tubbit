@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { model } from "mongoose";
 import { Playlist } from "../models/playlist.model.js";
 import { Video } from "../models/video.model.js";
 import { apiError } from "../utils/apiError.js";
@@ -199,12 +199,21 @@ const getPlaylistById = asyncHandler(async(req, res) => {
     }
 
     const playlist = await Playlist.findById(playlistId)
+    .populate("owner", "username fullname avatar")
+    .populate({
+        path: "videos",
+        populate: {
+            path: "owner",
+            model: "User",
+            select: "username fullname avatar"
+        }
+    })
 
     if (!playlist) {
         throw new apiError(404, "No playlist found with this playlist id")
     }
 
-    if (playlist.isPrivate && playlist.owner.toString() !== req.user._id.toString()) {
+    if (playlist.isPrivate && playlist.owner._id.toString() !== req.user._id.toString()) {
         throw new apiError(403, "You are not authorized to view this playlist");
     }
 
@@ -227,6 +236,16 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
             owner: userId
         }
     )
+    .populate("owner", "username fullname avatar")
+    .populate({
+        path: "videos",
+        populate: {
+            path: "owner",
+            model: "User",
+            select: "username fullname, avatar"
+        },
+        select: "-videofilepublicid -thumbnailpublicid"
+    })
 
     if (!playlists || playlists.length === 0) {
         throw new apiError(404, "No found any playlist for this user")
