@@ -119,7 +119,7 @@ const getUserPlaylists = async () => {
   try {
     const res = await api.get("/playlist/");
 
-    if (res.status) {
+    if (res.status !== 200) {
       return console.log("SERVICES :: ERROR: Failed to fetch user playlists");
     }
 
