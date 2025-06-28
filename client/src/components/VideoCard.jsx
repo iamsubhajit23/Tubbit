@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/Avatar.jsx";
 import { Card } from "./ui/Card.jsx";
 
@@ -127,7 +128,8 @@ const VideoCard = ({
                 {fullname}
               </p>
               <p>
-                {views} • {timestamp}
+                {views} •{" "}
+                {formatDistanceToNow(new Date(timestamp), { addSuffix: true })}
               </p>
             </div>
           </div>
