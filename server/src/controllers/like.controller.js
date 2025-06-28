@@ -3,7 +3,7 @@ import { Video } from "../models/video.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
-import mongoose from "mongoose";
+import mongoose, { model } from "mongoose";
 
 const toggleLikeOnVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
@@ -123,7 +123,6 @@ const getTotalLikesOnVideo = asyncHandler(async (req, res) => {
     video: videoId,
   });
 
-
   return res
     .status(200)
     .json(
@@ -141,7 +140,14 @@ const getLikedVideos = asyncHandler(async (req, res) => {
   const likedVideo = await Like.find({
     likedby: userId,
     video: { $ne: null },
-  }).populate("video");
+  }).populate({
+    path: "video",
+    populate: {
+      path: "owner",
+      model: "User",
+      select: "username fullname avatar",
+    },
+  });
 
   if (!likedVideo || likedVideo.length == 0) {
     throw new apiError(404, "You have not liked any video");
