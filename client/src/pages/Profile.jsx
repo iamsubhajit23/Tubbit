@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Calendar, MapPin, Link as LinkIcon, Edit, Bell } from "lucide-react";
-import { useSelector,useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
 import {
@@ -22,6 +22,7 @@ import { getAllVideos } from "../services/video/video.api.js";
 import { getAllTweets } from "../services/tweet/tweet.api.js";
 import { toggleSubscription } from "../services/subscription/subscription.api.js";
 import { toggleSubscribedChannel } from "../store/slices/subscriptionSlice.js";
+import formatDuration from "../utils/functions/videoDurationFormat.js";
 
 const Profile = () => {
   const [userData, setUserData] = useState(null);
@@ -97,18 +98,6 @@ const Profile = () => {
     }
 
     dispatch(toggleSubscribedChannel(userData?._id));
-  };
-
-  const formatDuration = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-
-    const padded = (n) => String(n).padStart(2, "0");
-
-    return h > 0
-      ? `${padded(h)}:${padded(m)}:${padded(s)}`
-      : `${padded(m)}:${padded(s)}`;
   };
 
   if (profileLoading)
@@ -222,10 +211,8 @@ const Profile = () => {
                 avatar={video.owner.avatar}
                 fullname={video.owner.fullname}
                 hoverToPlay={false}
-                duration={formatDuration(video.duration)}
-                timestamp={formatDistanceToNow(new Date(video.createdAt), {
-                  addSuffix: true,
-                })}
+                duration={formatDuration(video?.duration)}
+                timestamp={video?.createdAt}
               />
             ))}
           </div>
