@@ -107,6 +107,18 @@ const getWatchHistory = async () => {
   }
 };
 
+const addVideoToWatchHistory = async (videoId) => {
+  try {
+    const res = await api.post(`/user/add-video-to-watch-history/${videoId}`);
+
+    return res.data;
+  } catch (error) {
+    const message = error?.response?.data?.message;
+    console.log(message)
+    return;
+  }
+};
+
 const refreshAccessToken = async () => {
   try {
     return await api.post("/user/refresh-token");
@@ -124,4 +136,5 @@ export {
   getChannelProfile,
   refreshAccessToken,
   getWatchHistory,
+  addVideoToWatchHistory,
 };
