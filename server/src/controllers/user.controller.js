@@ -400,48 +400,95 @@ const getUserWatchHistory = asyncHandler(async (req, res) => {
       },
     },
     {
+      $unwind: "$watchhistory",
+    },
+    {
       $lookup: {
         from: "videos",
-        localField: "watchhistory",
+        localField: "watchhistory.video",
         foreignField: "_id",
-        as: "watchhistory",
+        as: "video",
+      },
+    },
+    {
+      $unwind: "$video",
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "video.owner",
+        foreignField: "_id",
+        as: "video.owner",
         pipeline: [
           {
-            $lookup: {
-              from: "users",
-              localField: "owner",
-              foreignField: "_id",
-              as: "owner",
-              pipeline: [
-                {
-                  $project: {
-                    fullname: 1,
-                    username: 1,
-                    avatar: 1,
-                  },
-                },
-              ],
-            },
-          },
-          {
-            $addFields: {
-              owner: {
-                $first: "$owner",
-              },
+            $project: {
+              fullname: 1,
+              username: 1,
+              avatar: 1,
             },
           },
         ],
       },
     },
+    {
+      $addFields: {
+        "video.owner": { $first: "$video.owner" },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        watchedAt: "$watchhistory.watchedat",
+        video: "$video",
+      },
+    },
+    {
+      $sort: { watchedAt: -1 },
+    },
   ]);
 
   return res
     .status(200)
+    .json(new apiResponse(200, user, "Watch History fetched Successfully!"));
+});
+
+const addVideoToWatchHistory = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { videoId } = req.params;
+
+  if (!videoId) {
+    throw new apiError(400, "Video ID is required");
+  }
+
+  const user = await User.findById(userId);
+
+  user.watchhistory = user.watchhistory.filter((entry) => {
+    if (typeof entry === "object" && entry.video) {
+      return entry.video.toString() !== videoId;
+    } else if (entry && entry.toString) {
+      return entry.toString() !== videoId;
+    }
+    return true;
+  });
+
+  user.watchhistory.unshift({
+    video: videoId,
+    watchedAt: new Date(),
+  });
+
+  if (user.watchhistory.length > 100) {
+    user.watchhistory = user.watchhistory.slice(0, 100);
+  }
+
+  await user.save();
+
+  res
+    .status(200)
     .json(
       new apiResponse(
         200,
-        user[0].watchhistory,
-        "Watch History fetched Successfully!"
+        { watchhistory: user.watchhistory },
+        "Watch history updated"
       )
     );
 });
@@ -458,4 +505,5 @@ export {
   updateUserCoverImage,
   getUserChannelProfile,
   getUserWatchHistory,
+  addVideoToWatchHistory,
 };
