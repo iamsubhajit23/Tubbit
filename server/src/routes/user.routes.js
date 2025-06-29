@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {rateLimit} from "express-rate-limit";
 import {
+  addVideoToWatchHistory,
   changeUserPassword,
   getCurrentUser,
   getUserChannelProfile,
@@ -61,5 +62,7 @@ router
 router.route("/channel/:username").get(verifyJWT, getUserChannelProfile);
 
 router.route("/watchhistory").get(verifyJWT, getUserWatchHistory);
+
+router.route("/add-video-to-watch-history/:videoId").post(verifyJWT, addVideoToWatchHistory);
 
 export default router;
