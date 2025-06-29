@@ -9,10 +9,12 @@ import {
 } from "../components/ui/Card.jsx";
 import { getUserPlaylists } from "../services/playlist/playlist.api.js";
 import errorToast from "../utils/notification/error.js";
+import { useNavigate } from "react-router-dom";
 
 const Playlists = () => {
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -48,6 +50,7 @@ const Playlists = () => {
           {userPlaylists.map((playlist) => (
             <Card
               key={playlist._id}
+              onClick={() => navigate(`/playlist/${playlist?._id}`)}
               className="cursor-pointer hover:shadow-lg transition-shadow"
             >
               <div className="relative">
@@ -67,8 +70,11 @@ const Playlists = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {playlist?.description}
+                <p
+                  onClick={() => navigate(`/playlist/${playlist?._id}`)}
+                  className="text-sm text-muted-foreground hover:text-white cursor-pointer"
+                >
+                  View full playlist
                 </p>
               </CardContent>
             </Card>
