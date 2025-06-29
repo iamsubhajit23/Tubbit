@@ -12,7 +12,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
   }
 
   if (channelId == subscriberId) {
-    throw new apiError(400," Channel and subscriber can not be same" )
+    throw new apiError(400, " Channel and subscriber can not be same");
   }
 
   const Subscribed = await Subscription.findOne({
@@ -81,7 +81,9 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
 
   const channel = await Subscription.find({
     subscriber: subscriberId,
-  }).populate("channel", "fullname username avatar");
+  })
+    .sort({ createdAt: -1 })
+    .populate("channel", "fullname username avatar");
 
   return res.status(200).json(
     new apiResponse(
@@ -95,9 +97,4 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
   );
 });
 
-export { 
-  toggleSubscription, 
-  getUserChannelSubscribers, 
-  getSubscribedChannel,
-
-};
+export { toggleSubscription, getUserChannelSubscribers, getSubscribedChannel };
