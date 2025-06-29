@@ -6,6 +6,9 @@ import {
   Download,
   Flag,
   Bell,
+  MoreHorizontal,
+  Bookmark,
+  X,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -16,6 +19,13 @@ import {
   AvatarImage,
   AvatarFallback,
 } from "../components/ui/Avatar.jsx";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "../components/ui/DropDownMenu.jsx";
 import { Card } from "../components/ui/Card.jsx";
 import VideoPlayer from "../components/VideoPlayer.jsx";
 import { getVideoComments } from "../services/comment/comment.api.js";
@@ -36,6 +46,7 @@ import errorToast from "../utils/notification/error.js";
 import warningToast from "../utils/notification/warning.js";
 import { toggleSubscribedChannel } from "../store/slices/subscriptionSlice.js";
 import { toggleLike } from "../store/slices/likeSlice.js";
+import { addVideoToWatchHistory } from "../services/user/profile.api.js";
 
 const Watch = () => {
   const [videoData, setVideoData] = useState();
@@ -95,9 +106,19 @@ const Watch = () => {
       setIsLoadingRelated(false);
     };
 
+    const addVideoIdToHistory = async (videoId) => {
+      const res = await addVideoToWatchHistory(videoId);
+
+      if (res.statuscode !== 200) {
+        console.log("Failed to add video to watch history");
+        return;
+      }
+    };
+
     window.scrollTo(0, 0);
     fetchVideo();
     fetchRelatedVideos();
+    addVideoIdToHistory(videoId);
   }, [videoId]);
 
   useEffect(() => {
@@ -155,7 +176,7 @@ const Watch = () => {
     if ([200, 201].includes(res.statuscode)) {
       const toggled = !wasLiked;
       setLiked(toggled);
-      setIsDislike(false); 
+      setIsDislike(false);
 
       setLikeCount((prev) => (toggled ? prev + 1 : Math.max(0, prev - 1)));
 
@@ -183,7 +204,7 @@ const Watch = () => {
         return;
       }
     }
-    
+
     setIsDislike((prev) => !prev);
   };
 
@@ -279,9 +300,25 @@ const Watch = () => {
                 <Button variant="ghost">
                   <Download className="w-4 h-4 mr-2" /> Download
                 </Button>
-                <Button variant="ghost">
-                  <Flag className="w-4 h-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreHorizontal className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="bottom" align="end">
+                    <DropdownMenuItem onClick={() => alert("Report video")}>
+                      <Flag className="w-4 h-4 mr-2" /> Report
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => alert("Save to playlist")}>
+                      <Bookmark className="w-4 h-4 mr-2" /> Save to playlist
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => alert("Not interested")}>
+                      <X className="w-4 h-4 mr-2" /> Not interested
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
