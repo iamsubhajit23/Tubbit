@@ -145,6 +145,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
     {
       $unwind: "$owner",
     },
+    {
+      $project: {
+        "owner.watchhistory": 0,
+        "owner.password": 0,
+        "owner.refreshtoken": 0,
+      },
+    },
   ]);
 
   const { docs, totalDocs, totalPages } = await Video.aggregatePaginate(
