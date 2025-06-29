@@ -30,6 +30,7 @@ import {
 } from "../ui/DropDownMenu.jsx";
 
 export const Navbar = () => {
+  const [query, setQuery] = useState("");
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const logOutDispatch = useDispatch();
@@ -41,6 +42,15 @@ export const Navbar = () => {
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (query.trim()) {
+      navigate(`/search/?q=${encodeURIComponent(query.trim())}`);
+      setQuery("");
+      setIsMobileSearchOpen(false);
+    }
+  };
 
   const handleAuthClick = () => navigate("/auth");
 
@@ -85,18 +95,23 @@ export const Navbar = () => {
             </div>
 
             {/* Desktop Search Bar */}
-            <div className="hidden md:flex flex-1 max-w-xl mx-8">
+            <form
+              onSubmit={handleSearch}
+              className="hidden md:flex flex-1 max-w-xl mx-8"
+            >
               <div className="relative w-full">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-gray-400" />
                 </div>
                 <Input
                   type="text"
-                  placeholder="Search videos, users..."
+                  placeholder="Search videos"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                 />
               </div>
-            </div>
+            </form>
 
             {/* Right Icons */}
             <div className="flex items-center space-x-3">
@@ -111,7 +126,10 @@ export const Navbar = () => {
                   <Search className="w-5 h-5" />
                 </Button>
               ) : (
-                <div className="flex items-center space-x-2 w-full max-w-[300px]">
+                <form
+                  onSubmit={handleSearch}
+                  className="flex items-center space-x-2 w-full max-w-[300px]"
+                >
                   <div className="relative w-full">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Search className="h-5 w-5 text-gray-400" />
@@ -120,16 +138,19 @@ export const Navbar = () => {
                       type="text"
                       autoFocus
                       placeholder="Search..."
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
                       className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                     <button
+                      type="button"
                       onClick={() => setIsMobileSearchOpen(false)}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
                       ✕
                     </button>
                   </div>
-                </div>
+                </form>
               )}
 
               {/* Auth Section */}
