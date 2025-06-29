@@ -83,9 +83,7 @@ const Home = () => {
               username={video.owner.username}
               avatar={video.owner.avatar}
               duration={formatDuration(video.duration)}
-              timestamp={formatDistanceToNow(new Date(video.createdAt), {
-                addSuffix: true,
-              })}
+              timestamp={video.createdAt}
             />
           </div>
         ))}
