@@ -8,6 +8,7 @@ import { ThemeProvider } from "./components/ThemeProvider.jsx";
 import { TooltipProvider } from "./components/ui/ToolTip.jsx";
 import MainLayout from "./components/MainLayout.jsx";
 
+import SearchPage from "./pages/SearchPage.jsx";
 import UploadVideo from "./pages/UploadVideo.jsx";
 import CreateTweet from "./pages/CreateTweet.jsx";
 import Home from "./pages/Home.jsx";
@@ -16,9 +17,10 @@ import Profile from "./pages/Profile.jsx";
 import Tweets from "./pages/Tweets.jsx";
 import Tweet from "./pages/Tweet.jsx";
 import Auth from "./pages/Auth.jsx";
-import History from "./pages/History.jsx";
+import WatchHistory from "./pages/WatchHistory.jsx";
 import LikedVideos from "./pages/LikedVideos.jsx";
 import Playlists from "./pages/Playlists.jsx";
+import Playlist from "./pages/Playlist.jsx";
 import Settings from "./pages/Settings.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
@@ -38,15 +40,17 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/*" element={<MainLayout />}>
                   <Route path="" element={<Home />} />
+                  <Route path="search/" element={<SearchPage />} />
                   <Route path="upload-video" element={<UploadVideo />} />
                   <Route path="create-tweet" element={<CreateTweet />} />
                   <Route path="watch/:videoId" element={<Watch />} />
                   <Route path="profile/:username" element={<Profile />} />
                   <Route path="tweets" element={<Tweets />} />
                   <Route path="tweet/:tweetId" element={<Tweet />} />
-                  <Route path="watch-history" element={<History />} />
+                  <Route path="watch-history" element={<WatchHistory />} />
                   <Route path="liked-videos" element={<LikedVideos />} />
                   <Route path="playlists" element={<Playlists />} />
+                  <Route path="playlist/:playlistId" element={<Playlist />} />
                   <Route path="settings" element={<Settings />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>
