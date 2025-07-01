@@ -21,7 +21,7 @@ import {
 } from "../components/ui/Tabs.jsx";
 import { useTheme } from "../components/ThemeProvider.jsx";
 import lightLogo from "../assets/Tubbit_Logo_final_light.png";
-import darkLogo from "../assets/Tubbit_Logo_final_dark2.png";
+import darkLogo from "../assets/Tubbit_logo_final_dark2.png";
 import { signUp, signIn } from "../services/user/auth.api.js";
 import { login as storeLogin } from "../store/slices/AuthSlice.js";
 
