@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Heart,
   MessageCircle,
@@ -12,6 +12,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "./ui/Avatar.jsx";
 import { Card } from "./ui/Card.jsx";
 import { Button } from "./ui/Button.jsx";
 import errorToast from "../utils/notification/error.js";
+import { getLikesOnTweet, toggleLikeOnTweet } from "../services/like/like.api.js";
+import { getTweetComments } from "../services/comment/comment.api.js";
 
 const TweetCard = ({
   tweetId,
@@ -20,18 +22,39 @@ const TweetCard = ({
   fullname,
   userAvatar,
   timestamp,
-  likes = 0,
-  retweets = 0,
-  replies = 0,
   images = [],
 }) => {
   const imageList = images ? (Array.isArray(images) ? images : [images]) : [];
   const [isLiked, setIsLiked] = useState(false);
-  const [isRetweeted, setIsRetweeted] = useState(false);
-  const [likeCount, setLikeCount] = useState(likes);
-  const [retweetCount, setRetweetCount] = useState(retweets);
+  const [likeCount, setLikeCount] = useState(0);
+  const [repliesCount, setRepliesCount] = useState(0);
   const navigate = useNavigate();
   const authStatus = useSelector((state) => state.auth.status);
+
+  useEffect(() => {
+    const fetchTweetLikes = async () => {
+      const res = await getLikesOnTweet(tweetId);
+
+      if (res.statuscode !== 200) {
+        console.log("Failed to fetch tweet likes")
+        return;
+      }
+
+      setLikeCount(res.data?.totalLikes);
+    }
+
+    const fetchTweetComments = async () => {
+      const res = await getTweetComments(tweetId);
+
+      if (res.statuscode !== 200) {
+        console.log("Failed to fetch tweet comments right now");
+        return;
+      }
+      setRepliesCount(res.data.totalDocs);
+    }
+    fetchTweetLikes();
+    fetchTweetComments();
+  }, [tweetId])
 
   const handleMouseClick = () => {
     if (authStatus) {
@@ -42,14 +65,18 @@ const TweetCard = ({
     }
   };
 
-  const handleLike = () => {
+  const handleLike = async () => {
+    if (!tweetId) {
+      return console.log("Tweet id is required to like");
+    }
+
+    const res = await toggleLikeOnTweet(tweetId);
+    if (res.statuscode !== 200) {
+      errorToast("Can't handle this right now");
+      return;
+    }
     setIsLiked((prev) => !prev);
     setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
-  };
-
-  const handleRetweet = () => {
-    setIsRetweeted((prev) => !prev);
-    setRetweetCount((prev) => (isRetweeted ? prev - 1 : prev + 1));
   };
 
   return (
@@ -123,22 +150,11 @@ const TweetCard = ({
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => navigate(`/tweet/${tweetId}`)}
               className="flex items-center gap-2 hover:text-blue-500 hover:bg-blue-500/10"
             >
               <MessageCircle className="h-4 w-4" />
-              <span className="text-sm">{replies}</span>
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRetweet}
-              className={`flex items-center gap-2 hover:text-green-500 hover:bg-green-500/10 ${
-                isRetweeted ? "text-green-500" : ""
-              }`}
-            >
-              <Repeat className="h-4 w-4" />
-              <span className="text-sm">{retweetCount}</span>
+              <span className="text-sm">{repliesCount}</span>
             </Button>
 
             <Button
