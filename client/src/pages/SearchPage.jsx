@@ -14,6 +14,7 @@ const SearchPage = () => {
   const navigate = useNavigate();
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isRelated, setIsRelated] = useState(false);
 
   useEffect(() => {
     if (!query) return;
@@ -22,12 +23,15 @@ const SearchPage = () => {
       const res = await getAllVideos({ query: query, sortBy: "views" });
 
       if (res.statuscode !== 200) {
-        errorToast("Failed to get videos.");
         setLoading(false);
+        console.log("Failed to get videos.");
         return;
       }
 
       setResults(res.data?.docs);
+      if (res.data?.related) {
+        setIsRelated(true);
+      }
       setLoading(false);
     };
     fetchVideos();
@@ -35,26 +39,33 @@ const SearchPage = () => {
 
   if (loading) return <div className="p-6 text-center">Loading...</div>;
 
+  if (!loading && results.length === 0) {
+    return (
+      <div className="p-6 text-center text-muted-foreground">
+        No videos found for: <span className="font-medium">{query}</span>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
       <h2 className="text-2xl font-semibold text-foreground">
-        {results.length > 0
-          ? `Search results for: ${query}`
-          : "No exact matches found, Search something else."}
+        {isRelated
+          ? `No exact matches found. Showing related results for: ${query}`
+          : `Search results for: ${query}`}
       </h2>
 
       {/* Videos Section */}
       {results.length > 0 && (
         <div className="space-y-4">
+         <h3>{results.length} results found</h3>
           {results.map((video, index) => (
             <Card
               key={video._id}
               className="p-4 hover:bg-accent/50 transition-colors"
             >
               <div className="flex gap-4">
-                <div className="flex items-center justify-center w-8 text-sm text-muted-foreground font-medium">
-                  {index + 1}
-                </div>
+                
 
                 <div
                   onClick={() => navigate(`/watch/${video._id}`)}
