@@ -53,7 +53,7 @@ const AppSidebar = () => {
     <Sidebar>
       <SidebarContent>
         {/* First Section */}
-        <SidebarGroup>
+        <SidebarGroup className="mt-4">
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
