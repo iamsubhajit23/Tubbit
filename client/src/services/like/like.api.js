@@ -1,6 +1,4 @@
 import api from "../api";
-import successToast from "../../utils/notification/success";
-import { apiErrorHandler } from "../../utils/apiErrorHandler";
 
 const toggleLikeOnVideo = async (videoId) => {
   try {
@@ -86,10 +84,29 @@ const getLikedVideos = async () => {
   }
 };
 
+const getLikesOnTweet = async (tweetId) => {
+  try {
+    if (!tweetId) {
+      return console.log("Tweet id is required to fetch tweet likes");
+    }
+
+    const res = await api.get(`/like/tweet-likes/${tweetId}`);
+
+    if (res.status !== 200) {
+      return console.log("Errror while fetching tweet likes");
+    }
+
+    return res.data;
+  } catch (error) {
+    return console.log(error?.response?.data?.message);
+  }
+};
+
 export {
   toggleLikeOnVideo,
   toggleLikeOnComment,
   toggleLikeOnTweet,
   getLikesOnVideo,
   getLikedVideos,
+  getLikesOnTweet,
 };
