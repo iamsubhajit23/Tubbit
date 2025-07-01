@@ -210,7 +210,7 @@ const Watch = () => {
 
   const handleSubscribeButton = async () => {
     if (!authStatus) {
-      warningToast("Please login to subscribe");
+      warningToast("Please sign in to subscribe");
       return;
     }
 
