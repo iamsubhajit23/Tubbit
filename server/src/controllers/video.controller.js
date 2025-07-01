@@ -120,20 +120,26 @@ const getAllVideos = asyncHandler(async (req, res) => {
     sort: sortOptions,
   };
 
-  const match = {
-    ...(query && {
+  let match = {};
+  let related = false;
+  let fallback = null;
+
+  if (query) {
+    match = {
       $or: [
         { title: { $regex: query, $options: "i" } },
         { description: { $regex: query, $options: "i" } },
       ],
-    }),
-    ...(userId && { owner: new mongoose.Types.ObjectId(userId) }),
-  };
+    };
+  }
 
-  const aggregate = Video.aggregate([
-    {
-      $match: match,
-    },
+  if (userId) {
+    match.owner = new mongoose.Types.ObjectId(userId);
+  }
+
+  // First attempt
+  let aggregate = Video.aggregate([
+    { $match: match },
     {
       $lookup: {
         from: "users",
@@ -142,9 +148,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
         as: "owner",
       },
     },
-    {
-      $unwind: "$owner",
-    },
+    { $unwind: "$owner" },
     {
       $project: {
         "owner.watchhistory": 0,
@@ -154,12 +158,57 @@ const getAllVideos = asyncHandler(async (req, res) => {
     },
   ]);
 
-  const { docs, totalDocs, totalPages } = await Video.aggregatePaginate(
+  let { docs, totalDocs, totalPages } = await Video.aggregatePaginate(
     aggregate,
     options
   );
 
-  if (!docs) {
+  // Fallback to fuzzy match
+  if (!docs || docs.length === 0) {
+    const keywords = query?.trim()?.split(/\s+/).filter(Boolean);
+    if (keywords.length > 0) {
+      const fuzzyRegex = new RegExp(keywords.join("|"), "i");
+
+      match = {
+        $or: [
+          { title: { $regex: fuzzyRegex } },
+          { description: { $regex: fuzzyRegex } },
+        ],
+      };
+
+      if (userId) {
+        match.owner = new mongoose.Types.ObjectId(userId);
+      }
+
+      aggregate = Video.aggregate([
+        { $match: match },
+        {
+          $lookup: {
+            from: "users",
+            localField: "owner",
+            foreignField: "_id",
+            as: "owner",
+          },
+        },
+        { $unwind: "$owner" },
+        {
+          $project: {
+            "owner.watchhistory": 0,
+            "owner.password": 0,
+            "owner.refreshtoken": 0,
+          },
+        },
+      ]);
+
+      fallback = await Video.aggregatePaginate(aggregate, options);
+      docs = fallback.docs;
+      totalDocs = fallback.totalDocs;
+      totalPages = fallback.totalPages;
+      related = true;
+    }
+  }
+
+  if (!docs || docs.length === 0) {
     throw new apiError(404, "No videos found");
   }
 
@@ -168,7 +217,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     .json(
       new apiResponse(
         200,
-        { docs, totalDocs, totalPages },
+        { docs, totalDocs, totalPages, related },
         "Videos fetched Successfully!"
       )
     );
