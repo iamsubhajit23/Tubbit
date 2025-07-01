@@ -4,7 +4,6 @@ import {
   Upload,
   Moon,
   Sun,
-  Menu,
   LogOut,
   Settings,
   User,
@@ -28,6 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/DropDownMenu.jsx";
+import { SidebarTrigger } from "../ui/Sidebar.jsx";
 
 export const Navbar = () => {
   const [query, setQuery] = useState("");
@@ -77,11 +77,12 @@ export const Navbar = () => {
 
   return (
     <>
-      <nav className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b dark:bg-transparent border-gray-200 dark:border-gray-700 backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Left: Logo & Menu Icon */}
+            {/* Left section: SidebarTrigger + Logo */}
             <div className="flex items-center space-x-4">
+              <SidebarTrigger className="ml-0" />
               <div
                 onClick={() => navigate("/")}
                 className="flex items-center space-x-2 cursor-pointer"
@@ -94,7 +95,7 @@ export const Navbar = () => {
               </div>
             </div>
 
-            {/* Desktop Search Bar */}
+            {/* Middle section: Search Bar */}
             <form
               onSubmit={handleSearch}
               className="hidden md:flex flex-1 max-w-xl mx-8"
@@ -113,9 +114,8 @@ export const Navbar = () => {
               </div>
             </form>
 
-            {/* Right Icons */}
+            {/* Right section */}
             <div className="flex items-center space-x-3">
-              {/* Mobile Search Icon */}
               {!isMobileSearchOpen ? (
                 <Button
                   variant="ghost"
