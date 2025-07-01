@@ -24,7 +24,7 @@ import Playlist from "./pages/Playlist.jsx";
 import Settings from "./pages/Settings.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
-import store from "./store/store.js";
+import store from "./store/Store.js";
 
 const queryClient = new QueryClient();
 
