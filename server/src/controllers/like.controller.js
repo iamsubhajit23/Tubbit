@@ -167,7 +167,29 @@ const getLikedVideos = asyncHandler(async (req, res) => {
   );
 });
 
-//TODO: totalLikeOnComment,totalLikeOnTweet,getLikedTweet
+const getTotalLikesOnTweet = asyncHandler(async (req, res) => {
+  const { tweetId } = req.params;
+
+  if (!tweetId || !mongoose.Types.ObjectId.isValid(tweetId)) {
+    throw new apiError(400, "Valid tweet id is required");
+  }
+
+  const likes = await Like.countDocuments({
+    tweet: tweetId,
+  });
+
+  return res
+    .status(200)
+    .json(
+      new apiResponse(
+        200,
+        { totalLikes: likes },
+        "Total likes fetched Successfully"
+      )
+    );
+});
+
+//TODO: totalLikeOnComment,getLikedTweet
 
 export {
   toggleLikeOnVideo,
@@ -175,4 +197,5 @@ export {
   toggleLikeOnTweet,
   getTotalLikesOnVideo,
   getLikedVideos,
+  getTotalLikesOnTweet,
 };
