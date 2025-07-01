@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import { ToastContainer } from "react-toastify";
 import { ThemeProvider } from "./components/ThemeProvider.jsx";
 import { TooltipProvider } from "./components/ui/ToolTip.jsx";
-import MainLayout from "./components/MainLayout.jsx";
+import App from "./App.jsx";
 
 import SearchPage from "./pages/SearchPage.jsx";
 import UploadVideo from "./pages/UploadVideo.jsx";
@@ -38,7 +38,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <BrowserRouter>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/*" element={<MainLayout />}>
+                <Route path="/*" element={<App />}>
                   <Route path="" element={<Home />} />
                   <Route path="search/" element={<SearchPage />} />
                   <Route path="upload-video" element={<UploadVideo />} />
