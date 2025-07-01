@@ -83,7 +83,7 @@ const togglePublishStatus = async (videoId) => {
       return apiErrorHandler(null, "Not found any video with this id");
     }
     const res = await api.patch(`/video/${videoId}/publish-status`);
-    
+
     if (res.status !== 200) {
       return apiErrorHandler(null, "Failed to toggle publish status");
     }
@@ -108,7 +108,9 @@ const getAllVideos = async (filters) => {
 
     return res.data;
   } catch (error) {
-    return console.log("Failed to fetch videos")
+    const message = error?.response?.data?.message;
+    console.log(message);
+    return error;
   }
 };
 
