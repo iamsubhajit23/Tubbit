@@ -15,19 +15,21 @@ import errorToast from "../utils/notification/error.js";
 import successToast from "../utils/notification/success.js";
 import { getTweetById } from "../services/tweet/tweet.api.js";
 import { getTweetComments } from "../services/comment/comment.api.js";
-import { toggleLikeOnTweet } from "../services/like/like.api.js";
+import {
+  toggleLikeOnTweet,
+  getLikesOnTweet,
+} from "../services/like/like.api.js";
 import { addCommentOnTweet } from "../services/comment/comment.api.js";
 
 const Tweet = () => {
   const { tweetId } = useParams();
   const [tweetData, setTweetData] = useState();
   const [replies, setReplies] = useState([]);
+  const [repliesCount, setRepliesCount] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [reply, setReply] = useState("");
   const [isPosting, setIsPosting] = useState(false);
-  //   const [isRetweeted, setIsRetweeted] = useState(false);
-  //   const [likeCount, setLikeCount] = useState(tweet.likes);
-  //   const [retweetCount, setRetweetCount] = useState(tweet.retweets);
+  const [likeCount, setLikeCount] = useState(0);
   const authStatus = useSelector((state) => state.auth.status);
   const authUserData = useSelector((state) => state.auth.userData);
   const user = authUserData || {};
@@ -55,8 +57,21 @@ const Tweet = () => {
         return;
       }
       setReplies(res?.data?.comments);
+      setRepliesCount(res.data?.totalDocs);
+    };
+
+    const fetchTweetLikes = async () => {
+      const res = await getLikesOnTweet(tweetId);
+
+      if (res.statuscode !== 200) {
+        console.log("Failed to fetch tweet likes");
+        return;
+      }
+
+      setLikeCount(res.data?.totalLikes);
     };
     fetchReplies();
+    fetchTweetLikes();
   }, [tweetId, replies]);
 
   const getInitials = (name) => {
@@ -76,6 +91,7 @@ const Tweet = () => {
       return;
     }
     setIsLiked(!isLiked);
+    setLikeCount((prev) => (isLiked ? Math.max(0, prev - 1) : prev + 1));
   };
 
   const handleReplySubmit = async () => {
@@ -100,18 +116,6 @@ const Tweet = () => {
       handleReplySubmit();
     }
   };
-
-  //   const handleRetweet = () => {
-  //     setIsRetweeted(!isRetweeted);
-  //     setRetweetCount((prev) => (isRetweeted ? prev - 1 : prev + 1));
-  //   };
-
-  //   const handleComment = () => {
-  //     if (newComment.trim()) {
-  //       console.log("Adding comment:", newComment);
-  //       setNewComment("");
-  //     }
-  //   };
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-6 animate-fade-in">
@@ -176,34 +180,15 @@ const Tweet = () => {
           </div>
         )}
 
-        {/* <div className="flex items-center gap-6 text-sm text-muted-foreground mb-4 pb-4 border-b">
-          <span>
-            <strong>{retweetCount}</strong> Retweets
-          </span>
-          <span>
-            <strong>{likeCount}</strong> Likes
-          </span>
-          <span>
-            <strong>{tweet.replies}</strong> Replies
-          </span>
-        </div> */}
-
         <div className="flex items-center justify-around text-muted-foreground">
           <Button
             variant="ghost"
             size="sm"
-            className="flex items-center gap-2 hover:text-blue-500 hover:bg-blue-500/10"
+            className="flex items-center gap-2 hover:text-blue-500 hover:bg-blue-500/10 cursor-default"
           >
             <MessageCircle className="h-5 w-5" />
+            <span className="text-sm">{repliesCount}</span>
           </Button>
-          {/* <Button
-            variant="ghost"
-            size="sm"
-            // onClick={handleRetweet}
-            className={`flex items-center gap-2 hover:text-green-500 hover:bg-green-500/10 ${isRetweeted ? "text-green-500" : ""}`}
-          >
-            <Repeat className="h-5 w-5" />
-          </Button> */}
           <Button
             variant="ghost"
             size="sm"
@@ -211,6 +196,7 @@ const Tweet = () => {
             className={`flex items-center gap-2 hover:text-red-500 hover:bg-red-500/10 ${isLiked ? "text-red-500" : ""}`}
           >
             <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
+            <span className="text-sm">{likeCount}</span>
           </Button>
           <Button
             variant="ghost"
@@ -226,7 +212,10 @@ const Tweet = () => {
       {authStatus && (
         <Card className="p-4 mb-6">
           <div className="flex gap-3">
-            <Avatar onClick={() => navigate(`/profile/${user?.data?.username}`)} className="w-10 h-10 cursor-pointer">
+            <Avatar
+              onClick={() => navigate(`/profile/${user?.data?.username}`)}
+              className="w-10 h-10 cursor-pointer"
+            >
               <AvatarImage src={user?.data?.avatar} alt="You" />
               <AvatarFallback>
                 {getInitials(user?.data?.fullname)}
@@ -263,7 +252,10 @@ const Tweet = () => {
             style={{ animationDelay: `${index * 100}ms` }}
           >
             <div className="flex gap-3">
-              <Avatar onClick={() => navigate(`/profile/${reply?.owner?.username}`)} className="w-10 h-10 cursor-pointer">
+              <Avatar
+                onClick={() => navigate(`/profile/${reply?.owner?.username}`)}
+                className="w-10 h-10 cursor-pointer"
+              >
                 <AvatarImage src={reply?.owner?.avatar} alt="" />
                 <AvatarFallback>
                   {getInitials(reply?.owner?.fullname)}
