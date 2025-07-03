@@ -94,7 +94,7 @@ const userLogIn = asyncHandler(async (req, res) => {
     await generateAccessTokenAndRefreshToken(user._id);
 
   const loggedinUser = await User.findById(user._id).select(
-    "-password -refreshToken"
+    "-password -refreshtoken -watchhistory"
   );
 
   const options = {
@@ -112,8 +112,6 @@ const userLogIn = asyncHandler(async (req, res) => {
         200,
         {
           user: loggedinUser,
-          accessToken,
-          refreshToken,
         },
         "User Logged In Successfully"
       )
