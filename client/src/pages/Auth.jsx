@@ -35,7 +35,6 @@ const Auth = () => {
 
   const navigate = useNavigate();
   const signinDispatch = useDispatch();
-  const signUpDispatch = useDispatch();
 
   const {
     register: signinRegister,
@@ -60,9 +59,8 @@ const Auth = () => {
   const createAccount = async (data) => {
     const response = await signUp(data);
     if (response.status === 201 || response.status === 200) {
-      userData = response.data;
-      signUpDispatch(storeLogin(userData));
-      navigate("/");
+      navigate("/auth");
+      window.location.reload();
     }
   };
 
