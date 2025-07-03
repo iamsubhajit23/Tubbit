@@ -11,12 +11,14 @@ import { getSubscribedChannel } from "./services/subscription/subscription.api.j
 import { setSubscribedChannels } from "./store/slices/subscriptionSlice.js";
 import { getLikedVideos } from "./services/like/like.api.js";
 import { setLikedVideos } from "./store/slices/likeSlice.js";
+import store from "./store/Store.js";
 
 const App = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
     const checkAuth = async () => {
+      if (store.getState().auth.userData) return;
       const response = await getCurrentUser();
       if ([200, 201].includes(response.statuscode)) {
         dispatch(login({ userData: response }));
