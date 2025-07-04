@@ -136,7 +136,7 @@ const Watch = () => {
     if (videoId) {
       fetchComments();
     }
-  }, [videoId]);
+  }, [videoId, comments]);
 
   useEffect(() => {
     const fetchVideoLikes = async () => {
