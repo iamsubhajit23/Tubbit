@@ -19,3 +19,48 @@ Tubbit is a modern, full-stack video-sharing platform inspired by **YouTube** an
 | Frontend        | Backend         | Database | Dev Tools & Libraries |
 |----------------|-----------------|----------|------------------------|
 | React + Vite   | Node.js + Express | MongoDB  | Redux Toolkit, Axios, Cloudinary, Multer, Cookie-Parser, React Hook Form, Lucide Icons, Express-Rate-Limit and many more... |
+
+## 📦 Installation
+
+### Prerequisites
+
+- Node.js
+- Express.js
+- React.js
+- MongoDB
+- Cloudinary account (for video uploads)
+
+### Clone the repo
+
+```bash
+git clone https://github.com/iamsubhajit23/Tubbit.git
+cd Tubbit
+```
+
+### Setup Server
+
+```bash
+cd server
+npm install
+# Create a .env file with your MongoDB URI, JWT secret, and Cloudinary credentials
+npm run dev
+```
+
+### Setup Client
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+### 🌐 Live 
+
+Check out the live version at: [tubbit.vercel.app](https://tubbit.vercel.app/)
+
+### 🤝 Contributing
+
+Contributions are welcome! Feel free to fork the repo and submit a pull request.
+
+
+Built with ❤️ by [Subhajit Dash](https://github.com/iamsubhajit23/)
