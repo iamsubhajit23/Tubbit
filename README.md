@@ -63,4 +63,4 @@ Check out the live version at: [tubbit.vercel.app](https://tubbit.vercel.app/)
 Contributions are welcome! Feel free to fork the repo and submit a pull request.
 
 
-Built with ❤️ by [Subhajit Dash](https://github.com/iamsubhajit23/)
+Built with ❤️ by [Subhajit Dash](https://www.linkedin.com/in/subhajitdash/)
