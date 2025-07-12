@@ -28,7 +28,7 @@ Tubbit is a modern, full-stack video-sharing platform inspired by **YouTube** an
 - Express.js
 - React.js
 - MongoDB
-- Cloudinary account (for video uploads)
+- Cloudinary (for assests uploads)
 
 ### Clone the repo
 
