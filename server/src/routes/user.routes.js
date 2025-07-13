@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {rateLimit} from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 import {
   addVideoToWatchHistory,
   changeUserPassword,
@@ -7,12 +7,14 @@ import {
   getUserChannelProfile,
   getUserWatchHistory,
   refreshAccessToken,
+  sendEmailOtp,
   updateUserAvatar,
   updateUserCoverImage,
   updateUserDetails,
   userLogIn,
   userLogOut,
   userRegister,
+  verifyEmailOtp,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -40,8 +42,11 @@ router.route("/register").post(
 
 router.route("/login").post(limiter, userLogIn);
 
-//secure routes
 router.route("/logout").post(verifyJWT, userLogOut);
+
+router.route("/send-email-otp").post(sendEmailOtp);
+
+router.route("/verify-email-otp").post(verifyEmailOtp);
 
 router.route("/refresh-token").post(refreshAccessToken);
 
