@@ -28,7 +28,9 @@ const signUp = async (credentials) => {
     successToast("Signup successfull. Please sign in, to confirm your account.");
     return res;
   } catch (error) {
-    return apiErrorHandler(error, "Signup failed.");
+    const message = error?.response?.data?.message;
+    errorToast(message);
+    return;
   }
 };
 
@@ -73,8 +75,57 @@ const signOut = async () => {
     successToast("Logout Successfull");
     return res;
   } catch (error) {
-    return apiErrorHandler(error, "Logout failed");
+    const message = error?.response?.data?.message;
+    errorToast(message);
+    return;
   }
 };
 
-export { signUp, signIn, signOut };
+const sendEmailOtp = async (email) => {
+  try {
+    if (!email) {
+      console.log("Email required to send email OTP")
+      return;
+    }
+
+    const res = await api.post("/user/send-email-otp", { email });
+
+    if (res.status !== 200) {
+      return { statuscode: res.status, message: res.message };
+    }
+    successToast("OTP sent to email");
+    return res.data;
+  } catch (error) {
+    const message = error?.response?.data?.message;
+    errorToast(message);
+    return error?.response?.data;
+  }
+}
+
+const verifyEmailOtp = async (email, otp) => {
+  try {
+    if (!email) {
+      console.log("Email required to send email OTP")
+      return;
+    }
+
+    if (!otp) {
+      console.log("Please enter OTP")
+      return;
+    }
+
+    const res = await api.post("/user/verify-email-otp", { email, otp });
+
+    if (res.status !== 200) {
+      return { statuscode: res.status, message: res.message };
+    }
+    successToast("Email verified");
+    return res.data;
+  } catch (error) {
+    const message = error?.response?.data?.message;
+    errorToast(message);
+    return error?.response?.data;
+  }
+}
+
+export { signUp, signIn, signOut, sendEmailOtp, verifyEmailOtp };
