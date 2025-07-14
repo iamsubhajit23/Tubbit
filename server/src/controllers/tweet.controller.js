@@ -9,6 +9,8 @@ import {
   uploadOnCloudinary,
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";
+import { Like } from "../models/like.model.js";
+import { Comment } from "../models/comment.model.js";
 
 const createTweet = asyncHandler(async (req, res) => {
   const { content } = req.body;
@@ -232,6 +234,9 @@ const deleteTweet = asyncHandler(async (req, res) => {
   if (!deletedTweet) {
     throw new apiError(500, "Error while deleting tweet");
   }
+
+  await Like.deleteMany({tweet: deletedTweet._id});
+  await Comment.deleteMany({tweet: deletedTweet._id});
 
   return res
     .status(200)

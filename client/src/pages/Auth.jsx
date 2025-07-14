@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "../components/ui/Button.jsx";
 import { Input } from "../components/ui/Input.jsx";
 import { Label } from "../components/ui/Label.jsx";
@@ -24,13 +24,17 @@ import lightLogo from "../assets/Tubbit_logo_light.png";
 import darkLogo from "../assets/Tubbit_logo_dark.png";
 import { signUp, signIn } from "../services/user/auth.api.js";
 import { login as storeLogin } from "../store/slices/AuthSlice.js";
+import warningToast from "../utils/notification/warning.js";
+import OTPVerification from "../components/OTPVerification.jsx";
 
 const Auth = () => {
   const { theme } = useTheme();
   const logo = theme == "dark" ? darkLogo : lightLogo;
 
   const [showPassword, setShowPassword] = useState(false);
-
+  const [isSigningin, setIsSigningin] = useState(false);
+  const [isSignuping, setIsSignuping] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const navigate = useNavigate();
@@ -40,16 +44,22 @@ const Auth = () => {
     register: signinRegister,
     handleSubmit: signinHandleSubmit,
     formState: { errors: signinErrors },
+    watch: signinWatch
   } = useForm();
   const {
     register: signupRegister,
     handleSubmit: signupHandleSubmit,
     formState: { errors: signupErrors },
+    watch: signupWatch,
   } = useForm();
 
+  const watchSigninEmail = signinWatch("email")
+
   const logInUser = async (data) => {
+    setIsSigningin(true);
     const response = await signIn(data);
     if (response.status === 200) {
+      setIsSigningin(false);
       const userData = response.data;
       signinDispatch(storeLogin(userData));
       navigate("/");
@@ -57,8 +67,14 @@ const Auth = () => {
   };
 
   const createAccount = async (data) => {
+    if (!emailVerified) {
+      warningToast("Please verify your email with OTP before signing up.");
+      return;
+    }
+    setIsSignuping(true);
     const response = await signUp(data);
     if (response.status === 201 || response.status === 200) {
+      setIsSignuping(false);
       navigate("/auth");
       window.location.reload();
     }
@@ -176,8 +192,15 @@ const Auth = () => {
                       </span>
                     )}
                   </div>
-                  <Button type="submit" className="w-full hover-scale">
-                    Sign In
+                  <Button type="submit" className="w-full hover-scale" disabled={!watchSigninEmail || isSigningin}>
+                   {isSigningin ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign in"
+                )}
                   </Button>
                 </form>
 
@@ -259,6 +282,10 @@ const Auth = () => {
                       </span>
                     )}
                   </div>
+                  <OTPVerification
+                    email={signupWatch("email")}
+                    onVerified={setEmailVerified}
+                  />
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
                     <div className="relative">
@@ -293,17 +320,17 @@ const Auth = () => {
                       </span>
                     )}
                   </div>
-                  <Button type="submit" className="w-full hover-scale">
-                    Create Account
+                  <Button type="submit" className="w-full hover-scale" disabled={!emailVerified || isSignuping}>
+                    {isSignuping ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Account"
+                )}
                   </Button>
                 </form>
-
-                <div className="mt-4 text-center">
-                  <p className="text-xs text-muted-foreground">
-                    By signing up, you agree to our Terms of Service and Privacy
-                    Policy.
-                  </p>
-                </div>
               </CardContent>
             </TabsContent>
           </Tabs>

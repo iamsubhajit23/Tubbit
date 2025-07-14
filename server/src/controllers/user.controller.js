@@ -4,8 +4,9 @@ import { User } from "../models/user.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import JWT from "jsonwebtoken";
-import mongoose from "mongoose";
 import { deleteLocalFile } from "../utils/deleteLocalFile.js";
+import redis from "../redis/client.js";
+import { sendOtp } from "../utils/sendOtp.js";
 
 const generateAccessTokenAndRefreshToken = async (userId) => {
   try {
@@ -27,14 +28,18 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
 
 const userRegister = asyncHandler(async (req, res) => {
   const { username, email, fullname, password } = req.body;
-  //field validation
+
   if (
     [username, email, fullname, password].some((field) => field?.trim() === "")
   ) {
     throw new apiError(400, "All fields are required!");
   }
 
-  //user validation
+  const isVerified = await redis.get(`verified:${email}`);
+  if (isVerified !== "true") {
+    throw new apiError(400, "Please verify your email first");
+  }
+
   const existedUser = await User.findOne({
     $or: [{ username }, { email }],
   });
@@ -42,7 +47,6 @@ const userRegister = asyncHandler(async (req, res) => {
     throw new apiError(400, "User with same email or username already exists!");
   }
 
-  //create user object on db
   const user = await User.create({
     username: username.toLowerCase(),
     email,
@@ -50,10 +54,11 @@ const userRegister = asyncHandler(async (req, res) => {
     password,
   });
 
-  //user validation and removing password and refreshtoken from response
   const createdUser = await User.findById(user._id).select(
     "-password -refreshtoken"
   );
+
+  await redis.del(`verified:${email}`);
 
   if (!createdUser) {
     throw new apiError(500, "Something went wrong while registering the user!");
@@ -142,6 +147,47 @@ const userLogOut = asyncHandler(async (req, res) => {
     .clearCookie("accessToken", options)
     .clearCookie("refreshtoken", options)
     .json(new apiResponse(200, {}, "User logged out Successfully"));
+});
+
+const sendEmailOtp = asyncHandler(async (req, res) => {
+  const {email}  = req.body;
+
+  if (!email) {
+    throw new apiError(400, "Email is required");
+  }
+
+  const isExist = await User.findOne({ email });
+  if (isExist) {
+    throw new apiError(400, "User with same email already exist");
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  redis.set(`otp:${email}`, otp, "EX", 300);
+
+  await sendOtp(email, otp);
+
+  return res.status(200).json(new apiResponse(200, {}, "OTP sent to email"));
+});
+
+const verifyEmailOtp = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email) {
+    throw new apiError(400, "Email is required");
+  }
+
+  const savedOtp = await redis.get(`otp:${email}`);
+  if (!savedOtp || savedOtp !== otp) {
+    throw new apiError(400, "Invalid or expired OTP");
+  }
+
+  await redis.set(`verified:${email}`, "true", "EX", 600);
+  await redis.del(`otp:${email}`);
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, {}, "OTP verified successfully"));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -497,6 +543,8 @@ export {
   userRegister,
   userLogIn,
   userLogOut,
+  sendEmailOtp,
+  verifyEmailOtp,
   refreshAccessToken,
   changeUserPassword,
   getCurrentUser,

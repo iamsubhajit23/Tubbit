@@ -7,6 +7,8 @@ import {
   uploadOnCloudinary,
 } from "../utils/cloudinary.js";
 import { User } from "../models/user.models.js";
+import {Like} from "../models/like.model.js"
+import {Comment} from "../models/comment.model.js"
 import mongoose from "mongoose";
 import { deleteLocalFile } from "../utils/deleteLocalFile.js";
 
@@ -238,6 +240,13 @@ const deleteVideo = asyncHandler(async (req, res) => {
   await deleteFromCloudinary(video.thumbnailpublicid, "image");
 
   const deletedVideo = await Video.findByIdAndDelete(video._id);
+
+  if (!deletedVideo) {
+    throw new apiError(500, "Error while deleting video");
+  }
+
+  await Like.deleteMany({video: deletedVideo._id});
+  await Comment.deleteMany({video: deletedVideo._id});
 
   return res
     .status(200)
