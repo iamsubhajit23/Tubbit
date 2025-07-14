@@ -2,7 +2,7 @@ import { toast, Bounce } from "react-toastify";
 
 const warningToast = (message) => {
   return toast.warn(message, {
-    position: "bottom-right",
+    position: "top-right",
     autoClose: 1000,
     hideProgressBar: false,
     closeOnClick: true,
