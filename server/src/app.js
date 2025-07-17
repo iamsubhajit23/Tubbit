@@ -24,7 +24,7 @@ app.use(
 );
 app.use(express.static("public"));
 app.use(cookieParser());
-app.set("trust proxy", 1);
+app.set("trust proxy", true);
 
 //routes configuration
 import userRouter from "./routes/user.routes.js";
