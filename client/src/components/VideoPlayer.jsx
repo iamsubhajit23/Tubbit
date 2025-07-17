@@ -4,7 +4,8 @@ import {
   Pause,
   Volume2,
   VolumeX,
-  Maximize2,
+  Maximize,
+  Minimize,
   Loader2,
 } from "lucide-react";
 import { Button } from "./ui/Button.jsx";
@@ -21,6 +22,7 @@ const VideoPlayer = ({ src }) => {
   const [showControls, setShowControls] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -40,8 +42,14 @@ const VideoPlayer = ({ src }) => {
   };
 
   const toggleFullscreen = () => {
-    if (containerRef.current.requestFullscreen) {
+    if (containerRef.current.requestFullscreen && !isFullScreen) {
       containerRef.current.requestFullscreen();
+      setIsFullScreen(true);
+    } else {
+      if (isFullScreen) {
+        document.exitFullscreen();
+        setIsFullScreen(false);
+      }
     }
   };
 
@@ -193,7 +201,11 @@ const VideoPlayer = ({ src }) => {
             </div>
 
             <Button variant="ghost" onClick={toggleFullscreen}>
-              <Maximize2 className="w-5 h-5" />
+              {isFullScreen ? (
+                <Minimize className="w-5 h-5" />
+              ) : (
+                <Maximize className="w-5 h-5" />
+              )}
             </Button>
           </div>
         </div>
