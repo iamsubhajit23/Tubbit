@@ -44,7 +44,7 @@ const Auth = () => {
     register: signinRegister,
     handleSubmit: signinHandleSubmit,
     formState: { errors: signinErrors },
-    watch: signinWatch
+    watch: signinWatch,
   } = useForm();
   const {
     register: signupRegister,
@@ -53,17 +53,20 @@ const Auth = () => {
     watch: signupWatch,
   } = useForm();
 
-  const watchSigninEmail = signinWatch("email")
+  const watchSigninEmail = signinWatch("email");
 
   const logInUser = async (data) => {
     setIsSigningin(true);
     const response = await signIn(data);
-    if (response.status === 200) {
+
+    if (response?.status !== 200 || response?.data?.success === false) {
       setIsSigningin(false);
-      const userData = response.data;
-      signinDispatch(storeLogin(userData));
-      navigate("/");
+      return;
     }
+    const userData = response.data;
+    signinDispatch(storeLogin(userData));
+    setIsSigningin(false);
+    navigate("/");
   };
 
   const createAccount = async (data) => {
@@ -73,11 +76,16 @@ const Auth = () => {
     }
     setIsSignuping(true);
     const response = await signUp(data);
-    if (response.status === 201 || response.status === 200) {
+    if (
+      ![200, 201].includes(response?.status) ||
+      response?.data?.success === false
+    ) {
       setIsSignuping(false);
-      navigate("/auth");
-      window.location.reload();
+      return;
     }
+    setIsSignuping(false);
+    navigate("/auth");
+    window.location.reload();
   };
 
   return (
@@ -192,15 +200,19 @@ const Auth = () => {
                       </span>
                     )}
                   </div>
-                  <Button type="submit" className="w-full hover-scale" disabled={!watchSigninEmail || isSigningin}>
-                   {isSigningin ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  "Sign in"
-                )}
+                  <Button
+                    type="submit"
+                    className="w-full hover-scale"
+                    disabled={!watchSigninEmail || isSigningin}
+                  >
+                    {isSigningin ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing in...
+                      </>
+                    ) : (
+                      "Sign in"
+                    )}
                   </Button>
                 </form>
 
@@ -320,15 +332,19 @@ const Auth = () => {
                       </span>
                     )}
                   </div>
-                  <Button type="submit" className="w-full hover-scale" disabled={!emailVerified || isSignuping}>
+                  <Button
+                    type="submit"
+                    className="w-full hover-scale"
+                    disabled={!emailVerified || isSignuping}
+                  >
                     {isSignuping ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  "Create Account"
-                )}
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      "Create Account"
+                    )}
                   </Button>
                 </form>
               </CardContent>

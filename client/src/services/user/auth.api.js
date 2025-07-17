@@ -30,7 +30,7 @@ const signUp = async (credentials) => {
   } catch (error) {
     const message = error?.response?.data?.message;
     errorToast(message);
-    return;
+    return error?.response;
   }
 };
 
@@ -61,7 +61,7 @@ const signIn = async (credentials) => {
       errorToast(message || "Signin failed. Please try again.");
     }
 
-    return null;
+    return error?.response;
   }
 };
 
