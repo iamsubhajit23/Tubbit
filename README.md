@@ -31,6 +31,7 @@ Tubbit is a modern, full-stack video-sharing platform inspired by **YouTube** an
 - MongoDB
 - Redis (for OTP storage)
 - Cloudinary (for asset uploads)
+- Express rate limiting 
 
 ### Clone the repo
 
