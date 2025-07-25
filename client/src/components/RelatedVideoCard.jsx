@@ -24,7 +24,7 @@ const RelatedVideoCard = ({
         <h4 className="text-sm font-medium line-clamp-2">{title}</h4>
         <p className="text-xs text-muted-foreground">{owner?.fullname}</p>
         <p className="text-xs text-muted-foreground">
-          {views} • {timestamp}
+          {views} views • {timestamp}
         </p>
       </div>
     </div>
