@@ -128,7 +128,7 @@ const VideoCard = ({
                 {fullname}
               </p>
               <p>
-                {views} •{" "}
+                {views} views •{" "}
                 {timestamp && formatDistanceToNow(new Date(timestamp), { addSuffix: true })}
               </p>
             </div>
