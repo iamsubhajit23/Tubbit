@@ -43,7 +43,7 @@ const uploadVideo = asyncHandler(async (req, res) => {
   // upload video and thumbnail on cloudinary
   const videoFile = await uploadOnCloudinary(videoLocalPath);
 
-  if (!videoFile.url) {
+  if (!videoFile.secure_url) {
     throw new apiError(400, "Error while uploading video on cloudinary!");
   }
 
@@ -53,14 +53,14 @@ const uploadVideo = asyncHandler(async (req, res) => {
 
   const thumbnailFile = await uploadOnCloudinary(thumbnailLocalPath);
 
-  if (!thumbnailFile.url) {
+  if (!thumbnailFile.secure_url) {
     throw new apiError(400, "Error while uploading thumbnail on cloudinary!");
   }
 
   //create video object on db
   const video = await Video.create({
-    videofile: videoFile.url,
-    thumbnail: thumbnailFile.url,
+    videofile: videoFile.secure_url,
+    thumbnail: thumbnailFile.secure_url,
     title,
     description,
     duration: videoFile.duration,
@@ -273,7 +273,7 @@ const updateThumbnail = asyncHandler(async (req, res) => {
   }
 
   const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
-  if (!thumbnail.url) {
+  if (!thumbnail.secure_url) {
     throw new apiError(400, "Error while uploading thumbnail on Cloudinary");
   }
 
@@ -284,7 +284,7 @@ const updateThumbnail = asyncHandler(async (req, res) => {
     video._id,
     {
       $set: {
-        thumbnail: thumbnail.url,
+        thumbnail: thumbnail.secure_url,
         thumbnailpublicid: thumbnail.public_id,
       },
     },
