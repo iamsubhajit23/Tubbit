@@ -12,7 +12,10 @@ import { Avatar, AvatarImage, AvatarFallback } from "./ui/Avatar.jsx";
 import { Card } from "./ui/Card.jsx";
 import { Button } from "./ui/Button.jsx";
 import errorToast from "../utils/notification/error.js";
-import { getLikesOnTweet, toggleLikeOnTweet } from "../services/like/like.api.js";
+import {
+  getLikesOnTweet,
+  toggleLikeOnTweet,
+} from "../services/like/like.api.js";
 import { getTweetComments } from "../services/comment/comment.api.js";
 
 const TweetCard = ({
@@ -36,12 +39,12 @@ const TweetCard = ({
       const res = await getLikesOnTweet(tweetId);
 
       if (res.statuscode !== 200) {
-        console.log("Failed to fetch tweet likes")
+        console.log("Failed to fetch tweet likes");
         return;
       }
 
       setLikeCount(res.data?.totalLikes);
-    }
+    };
 
     const fetchTweetComments = async () => {
       const res = await getTweetComments(tweetId);
@@ -51,10 +54,10 @@ const TweetCard = ({
         return;
       }
       setRepliesCount(res.data.totalDocs);
-    }
+    };
     fetchTweetLikes();
     fetchTweetComments();
-  }, [tweetId])
+  }, [tweetId]);
 
   const handleMouseClick = () => {
     if (authStatus) {
@@ -83,7 +86,11 @@ const TweetCard = ({
     <Card className="p-4 border-0 border-b border-border rounded-none hover:bg-card/80 transition-colors">
       <div className="flex gap-3">
         <Avatar
-          onClick={() => navigate(`/profile/${username}`)}
+          onClick={() => {
+                authStatus
+                  ? navigate(`/profile/${username}`)
+                  : navigate("/auth");
+              }}
           className="w-10 h-10 cursor-pointer"
         >
           <AvatarImage src={userAvatar} alt={username} />
@@ -94,7 +101,11 @@ const TweetCard = ({
           {/* Header */}
           <div className="flex items-center gap-2 mb-1">
             <span
-              onClick={() => navigate(`/profile/${username}`)}
+              onClick={() => {
+                authStatus
+                  ? navigate(`/profile/${username}`)
+                  : navigate("/auth");
+              }}
               className="font-semibold hover:underline cursor-pointer"
             >
               {fullname}
