@@ -52,6 +52,7 @@ const userRegister = asyncHandler(async (req, res) => {
     email,
     fullname,
     password,
+    authtype: "local",
   });
 
   const createdUser = await User.findById(user._id).select(
@@ -302,14 +303,13 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
   const avatarLocalPath = req.file?.path;
-
   if (!avatarLocalPath) {
     throw new apiError(401, "Avatar file is required!");
   }
 
-  const avatar = await uploadOnCloudinary(avatarLocalPath); // return response.url
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
 
-  if (!avatar.url) {
+  if (!avatar.secure_url) {
     deleteLocalFile(avatarLocalPath);
     throw new apiError(400, "Error, while updating avatar!");
   }
@@ -318,7 +318,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     req.user?._id,
     {
       $set: {
-        avatar: avatar.url,
+        avatar: avatar.secure_url,
       },
     },
     {
@@ -340,7 +340,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
   const coverImage = await uploadOnCloudinary(coverimageLocalPath);
 
-  if (!coverImage.url) {
+  if (!coverImage.secure_url) {
     deleteLocalFile(coverimageLocalPath);
     throw new apiError(401, "Error, while uploading cover Image!");
   }
@@ -349,7 +349,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     req.user?._id,
     {
       $set: {
-        coverimage: coverImage.url,
+        coverimage: coverImage.secure_url,
       },
     },
     {
@@ -539,6 +539,7 @@ const addVideoToWatchHistory = asyncHandler(async (req, res) => {
 });
 
 export {
+  generateAccessTokenAndRefreshToken,
   userRegister,
   userLogIn,
   userLogOut,
