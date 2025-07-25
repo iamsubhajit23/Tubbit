@@ -36,14 +36,14 @@ const createTweet = asyncHandler(async (req, res) => {
 
   const imageFile = await uploadOnCloudinary(imageLocalPath);
 
-  if (!imageFile.url) {
+  if (!imageFile.secure_url) {
     deleteLocalFile(imageFile);
     throw new apiError(400, "Error while uploading image on cloudinary!");
   }
 
   const createdTweet = await Tweet.create({
     content: sanitizedContent,
-    image: imageFile.url,
+    image: imageFile.secure_url,
     imagepublicid: imageFile.public_id,
     owner: userId,
   });
