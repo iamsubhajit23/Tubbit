@@ -7,8 +7,8 @@ import {
   uploadOnCloudinary,
 } from "../utils/cloudinary.js";
 import { User } from "../models/user.models.js";
-import {Like} from "../models/like.model.js"
-import {Comment} from "../models/comment.model.js"
+import { Like } from "../models/like.model.js"
+import { Comment } from "../models/comment.model.js"
 import mongoose from "mongoose";
 import { deleteLocalFile } from "../utils/deleteLocalFile.js";
 
@@ -122,17 +122,15 @@ const getAllVideos = asyncHandler(async (req, res) => {
     sort: sortOptions,
   };
 
-  let match = {};
+  let match = { ispublished: true };
   let related = false;
   let fallback = null;
 
   if (query) {
-    match = {
-      $or: [
-        { title: { $regex: query, $options: "i" } },
-        { description: { $regex: query, $options: "i" } },
-      ],
-    };
+    match.$or = [
+      { title: { $regex: query, $options: "i" } },
+      { description: { $regex: query, $options: "i" } },
+    ];
   }
 
   if (userId) {
@@ -171,12 +169,10 @@ const getAllVideos = asyncHandler(async (req, res) => {
     if (keywords.length > 0) {
       const fuzzyRegex = new RegExp(keywords.join("|"), "i");
 
-      match = {
-        $or: [
-          { title: { $regex: fuzzyRegex } },
-          { description: { $regex: fuzzyRegex } },
-        ],
-      };
+      match.$or = [
+        { title: { $regex: fuzzyRegex } },
+        { description: { $regex: fuzzyRegex } },
+      ];
 
       if (userId) {
         match.owner = new mongoose.Types.ObjectId(userId);
@@ -245,8 +241,8 @@ const deleteVideo = asyncHandler(async (req, res) => {
     throw new apiError(500, "Error while deleting video");
   }
 
-  await Like.deleteMany({video: deletedVideo._id});
-  await Comment.deleteMany({video: deletedVideo._id});
+  await Like.deleteMany({ video: deletedVideo._id });
+  await Comment.deleteMany({ video: deletedVideo._id });
 
   return res
     .status(200)
