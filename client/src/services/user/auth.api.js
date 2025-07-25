@@ -93,11 +93,8 @@ const sendEmailOtp = async (email) => {
     if (res.status !== 200) {
       return { statuscode: res.status, message: res.message };
     }
-    successToast("OTP sent to email");
     return res.data;
   } catch (error) {
-    const message = error?.response?.data?.message;
-    errorToast(message);
     return error?.response?.data;
   }
 }
@@ -119,7 +116,6 @@ const verifyEmailOtp = async (email, otp) => {
     if (res.status !== 200) {
       return { statuscode: res.status, message: res.message };
     }
-    successToast("Email verified");
     return res.data;
   } catch (error) {
     const message = error?.response?.data?.message;

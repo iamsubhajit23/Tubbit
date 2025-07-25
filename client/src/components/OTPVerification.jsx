@@ -35,7 +35,7 @@ const OTPVerification = ({ email, onVerified }) => {
     const res = await sendEmailOtp(email);
     if (res.success == false) {
       setStatus("error");
-      setError("otp", { message: res.message});
+      setError("otp", { message: res.message });
       return;
     }
     setStatus("sent");
@@ -91,24 +91,25 @@ const OTPVerification = ({ email, onVerified }) => {
             </Button>
           </div>
 
+          {status === "sent" && <p className="text-green-400 text-sm">OTP sent to your email. Check your inbox.</p>}
           {errors.otp && (
             <p className="text-red-400 text-sm">{errors.otp.message}</p>
           )}
-            <Button
-              type="button"
-              onClick={handleSubmit(handleVerifyOtp)}
-              className="hover-scale flex items-center gap-2 mt-2"
-              disabled={status === "verifying"}
-            >
-              {status === "verifying" ? (
-                <>
-                  <Loader2 className="animate-spin w-4 h-4" />
-                  Verifying...
-                </>
-              ) : (
-                "Verify OTP"
-              )}
-            </Button>
+          <Button
+            type="button"
+            onClick={handleSubmit(handleVerifyOtp)}
+            className="hover-scale flex items-center gap-2 mt-2"
+            disabled={status === "verifying"}
+          >
+            {status === "verifying" ? (
+              <>
+                <Loader2 className="animate-spin w-4 h-4" />
+                Verifying...
+              </>
+            ) : (
+              "Verify OTP"
+            )}
+          </Button>
         </>
       )}
 
