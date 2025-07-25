@@ -41,15 +41,20 @@ const VideoPlayer = ({ src }) => {
     setIsMuted(video.muted);
   };
 
-  const toggleFullscreen = () => {
-    if (containerRef.current.requestFullscreen && !isFullScreen) {
-      containerRef.current.requestFullscreen();
+  const toggleFullscreen = async () => {
+    const container = containerRef.current;
+
+    if (!document.fullscreenElement) {
+      await container.requestFullscreen();
+
+      if (window.innerWidth <= 768) {
+        container.classList.add("rotate-landscape");
+      }
       setIsFullScreen(true);
     } else {
-      if (isFullScreen) {
-        document.exitFullscreen();
-        setIsFullScreen(false);
-      }
+      await document.exitFullscreen();
+      container.classList.remove("rotate-landscape");
+      setIsFullScreen(false);
     }
   };
 
@@ -109,6 +114,20 @@ const VideoPlayer = ({ src }) => {
     }, 3000);
     return () => clearTimeout(timeout);
   }, [showControls]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const container = containerRef.current;
+      if (!document.fullscreenElement && container) {
+        container.classList.remove("rotate-landscape");
+        setIsFullScreen(false);
+      }
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);

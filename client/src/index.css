@@ -89,4 +89,9 @@
   .text-gradient {
     @apply bg-gradient-to-r from-tubbit-primary to-tubbit-secondary bg-clip-text text-transparent;
   }
+
+  .rotate-landscape {
+    @apply rotate-90 scale-[1.3] origin-center transition-transform duration-300 ease-in-out;
+  }
+
 }
