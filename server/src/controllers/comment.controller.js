@@ -35,7 +35,7 @@ const addCommentOnVideo = asyncHandler(async (req, res) => {
     owner: userId,
   });
 
-  const newComment = await Comment.findById(createdComment._id);
+  const newComment = await Comment.findById(createdComment._id).populate("owner", "username avatar");
 
   if (!newComment) {
     throw new apiError(501, "Error while add comment on video");
@@ -92,7 +92,8 @@ const updateVideoComment = asyncHandler(async (req, res) => {
     {
       new: true,
     }
-  );
+  ).populate("owner", "username avatar");
+
   if (!updatedComment) {
     throw new apiError(404, "No comment found for this comment id");
   }
@@ -207,12 +208,14 @@ const addCommentOnTweet = asyncHandler(async (req, res) => {
     throw new apiError(500, "Error while add comment on tweet");
   }
 
+  const newComment = await Comment.findById(createdComment._id).populate("owner", "username avatar");
+
   return res
     .status(201)
     .json(
       new apiResponse(
         201,
-        { comment: createdComment },
+        { comment: newComment },
         "Add comment on tweet Successfully"
       )
     );
@@ -254,7 +257,7 @@ const updateTweetComment = asyncHandler(async (req, res) => {
       content: sanitizedComment,
     },
     { new: true }
-  );
+  ).populate("owner", "username avatar");
 
   if (!updatedComment) {
     throw new apiError(500, "Error while updating tweet comment");
