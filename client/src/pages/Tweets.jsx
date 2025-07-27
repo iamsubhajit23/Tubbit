@@ -75,11 +75,8 @@ const Tweets = () => {
               username={tweet?.owner?.username}
               fullname={tweet?.owner?.fullname}
               userAvatar={tweet?.owner?.avatar}
-              timestamp={formatDistanceToNow(new Date(tweet?.updatedAt), {
-                addSuffix: true,
-              })}
+              updatedAt={tweet?.updatedAt}
               images={tweet?.image}
-              {...tweet}
             />
           </div>
         ))}
