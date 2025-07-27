@@ -20,6 +20,7 @@ import {
   getLikesOnTweet,
 } from "../services/like/like.api.js";
 import { addCommentOnTweet } from "../services/comment/comment.api.js";
+import CommentControl from "../components/comment/CommentControl.jsx";
 
 const Tweet = () => {
   const { tweetId } = useParams();
@@ -72,7 +73,7 @@ const Tweet = () => {
     };
     fetchReplies();
     fetchTweetLikes();
-  }, [tweetId, replies]);
+  }, [tweetId]);
 
   const getInitials = (name) => {
     if (!name) return "NA";
@@ -105,7 +106,10 @@ const Tweet = () => {
     } else {
       successToast("Reply posted");
       setReply("");
-      setReplies((prev) => [response.data, ...prev]);
+      const newReply = response.data?.comment
+      if (newReply) {
+        setReplies((prev) => [newReply, ...prev]);
+      }
     }
     setIsPosting(false);
   };
@@ -251,49 +255,59 @@ const Tweet = () => {
             className="p-4 border-0 border-b border-border rounded-none animate-slide-up"
             style={{ animationDelay: `${index * 100}ms` }}
           >
-            <div className="flex gap-3">
-              <Avatar
-                onClick={() => navigate(`/profile/${reply?.owner?.username}`)}
-                className="w-10 h-10 cursor-pointer"
-              >
-                <AvatarImage src={reply?.owner?.avatar} alt="" />
-                <AvatarFallback>
-                  {getInitials(reply?.owner?.fullname)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-muted-foreground">
-                    @{reply?.owner?.username.toLowerCase()}
-                  </span>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="text-muted-foreground text-sm">
-                    {reply?.updatedAt && !isNaN(new Date(reply.updatedAt))
-                      ? formatDistanceToNow(new Date(reply.updatedAt), {
-                          addSuffix: true,
-                        })
-                      : "Unknown"}
-                  </span>
+            <div className="flex gap-3 items-start justify-between">
+              <div className="flex gap-3 flex-1">
+                <Avatar
+                  onClick={() => navigate(`/profile/${reply?.owner?.username}`)}
+                  className="w-10 h-10 cursor-pointer"
+                >
+                  <AvatarImage src={reply?.owner?.avatar} alt="" />
+                  <AvatarFallback>
+                    {getInitials(reply?.owner?.fullname)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-muted-foreground">
+                      @{reply?.owner?.username.toLowerCase()}
+                    </span>
+                    <span className="text-muted-foreground">•</span>
+                    <span className="text-muted-foreground text-sm">
+                      {reply?.updatedAt && !isNaN(new Date(reply.updatedAt))
+                        ? formatDistanceToNow(new Date(reply.updatedAt), {
+                            addSuffix: true,
+                          })
+                        : "Unknown"}
+                    </span>
+                  </div>
+                  <p className="mb-2">{reply?.content}</p>
+                  <div className="flex items-center gap-4 text-muted-foreground">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-20 px-0 flex items-center gap-2 hover:text-blue-500 hover:bg-blue-500/10"
+                    >
+                      <MessageCircle className="h-4 w-4 mr-1" />
+                      <span className="text-sm">Reply</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-0 flex items-center gap-2 hover:text-red-500 hover:bg-red-500/10"
+                    >
+                      <Heart className="h-4 w-4 mr-1" />
+                      <span className="text-sm">{reply.likes}</span>
+                    </Button>
+                  </div>
                 </div>
-                <p className="mb-2">{reply?.content}</p>
-                <div className="flex items-center gap-4 text-muted-foreground">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-20 px-0 flex items-center gap-2 hover:text-blue-500 hover:bg-blue-500/10"
-                  >
-                    <MessageCircle className="h-4 w-4 mr-1" />
-                    <span className="text-sm">Reply</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-0 flex items-center gap-2 hover:text-red-500 hover:bg-red-500/10"
-                  >
-                    <Heart className="h-4 w-4 mr-1" />
-                    <span className="text-sm">{reply.likes}</span>
-                  </Button>
-                </div>
+              </div>
+              <div>
+                <CommentControl
+                  comment={reply}
+                  authUserId={user?.data?._id}
+                  setComments={setReplies}
+                  controllerFor="tweet"
+                />
               </div>
             </div>
           </Card>
