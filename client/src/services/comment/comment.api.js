@@ -124,8 +124,6 @@ const updateTweetComment = async (commentId, comment) => {
       return console.log("Failed to update comment on tweet");
     }
 
-    successToast("Comment updated successfully");
-
     return res.data;
   } catch (error) {
     return console.log(error?.response?.data?.message);
@@ -144,7 +142,6 @@ const deleteTweetComment = async (commentId) => {
       return console.log("Failed to delete comment from tweet");
     }
 
-    successToast("Comment deleted successfully");
     return res.data;
   } catch (error) {
     return console.log(error?.response?.data?.message);
