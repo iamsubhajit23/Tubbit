@@ -136,7 +136,7 @@ const Watch = () => {
     if (videoId) {
       fetchComments();
     }
-  }, [videoId, comments]);
+  }, [videoId]);
 
   useEffect(() => {
     const fetchVideoLikes = async () => {
@@ -388,6 +388,7 @@ const Watch = () => {
                       comment={comment}
                       authUserId={user?.data?._id}
                       setComments={setComments}
+                      controllerFor="video"
                     />
                   </div>
 
