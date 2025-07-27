@@ -4,12 +4,18 @@ import { Button } from "../ui/Button.jsx";
 import {
   updateVideoComment,
   deleteVideoComment,
+  updateTweetComment,
+  deleteTweetComment,
 } from "../../services/comment/comment.api.js";
 import successToast from "../../utils/notification/success.js";
 import errorToast from "../../utils/notification/error.js";
-import warningToast from "../../utils/notification/warning.js"
 
-const CommentControl = ({ comment, authUserId, setComments }) => {
+const CommentControl = ({
+  comment,
+  authUserId,
+  setComments,
+  controllerFor = "",
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedComment, setEditedComment] = useState(comment.text || "");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -23,10 +29,13 @@ const CommentControl = ({ comment, authUserId, setComments }) => {
     if (!confirmed) return;
 
     setIsProcessing(true);
-    const res = await deleteVideoComment(comment?._id);
+    const res =
+      controllerFor === "video"
+        ? await deleteVideoComment(comment?._id)
+        : await deleteTweetComment(comment?._id);
 
     if (res?.statuscode === 200) {
-      warningToast("Comment deleted");
+      successToast(`${res?.message}`);
       setComments((prev) => prev.filter((c) => c._id !== comment._id));
     } else {
       errorToast("Failed to delete comment");
@@ -37,15 +46,34 @@ const CommentControl = ({ comment, authUserId, setComments }) => {
   const handleUpdate = async () => {
     if (!editedComment.trim()) return;
     setIsProcessing(true);
-    const res = await updateVideoComment(comment?._id, editedComment.trim());
+
+    const res =
+      controllerFor === "video"
+        ? await updateVideoComment(comment?._id, editedComment.trim())
+        : await updateTweetComment(comment?._id, editedComment.trim());
 
     if (res?.statuscode === 200) {
-      successToast("Comment updated");
-      setComments((prev) =>
-        prev.map((c) =>
-          c._id === comment._id ? { ...c, text: editedComment.trim() } : c
-        )
-      );
+      successToast(`${res?.message}`);
+
+      const newUpdatedComment = res?.data?.updatedComment;
+      if (newUpdatedComment) {
+        const updatedText =
+          newUpdatedComment.content ||
+          newUpdatedComment.text ||
+          editedComment.trim();
+
+        setComments((prev) =>
+          prev.map((c) =>
+            c._id === comment._id
+              ? {
+                  ...c,
+                  content: updatedText,
+                }
+              : c
+          )
+        );
+        setEditedComment(updatedText);
+      }
       setIsEditing(false);
     } else {
       errorToast("Failed to update comment");
