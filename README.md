@@ -45,6 +45,7 @@ cd Tubbit
 ```bash
 cd server
 npm install
+npm run dev
 
 # Create a .env file with following variables:
 # PORT = 
