@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Search,
   Upload,
@@ -42,6 +42,7 @@ export const Navbar = () => {
 
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isSmallDevice, setIsSmallDevice] = useState(false);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -74,6 +75,17 @@ export const Navbar = () => {
     }
     setIsUploadModalOpen(true);
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSmallDevice(window.innerWidth < 768);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <>
@@ -156,15 +168,17 @@ export const Navbar = () => {
               {/* Auth Section */}
               {authStatus ? (
                 <DropdownMenu>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleUploadClick}
-                    className="hidden sm:flex"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Upload
-                  </Button>
+                  {!isSmallDevice && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleUploadClick}
+                      className="hidden sm:flex"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload
+                    </Button>
+                  )}
                   <NotificationsDropdown />
 
                   <DropdownMenuTrigger asChild>
@@ -201,6 +215,12 @@ export const Navbar = () => {
                       <User className="mr-2 h-4 w-4" />
                       Go to Profile
                     </DropdownMenuItem>
+                    {isSmallDevice && (
+                      <DropdownMenuItem onClick={handleUploadClick}>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={() => navigate("/settings")}>
                       <Settings className="mr-2 h-4 w-4" />
                       Settings
