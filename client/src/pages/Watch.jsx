@@ -9,6 +9,7 @@ import {
   MoreHorizontal,
   Bookmark,
   X,
+  Loader2,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -29,7 +30,11 @@ import {
 import { Card } from "../components/ui/Card.jsx";
 import VideoPlayer from "../components/VideoPlayer.jsx";
 import { getVideoComments } from "../services/comment/comment.api.js";
-import { getAllVideos, getVideoById } from "../services/video/video.api.js";
+import {
+  getAllVideos,
+  getVideoById,
+  getVideoDownloadLink,
+} from "../services/video/video.api.js";
 import RelatedVideoCard from "../components/RelatedVideoCard.jsx";
 import RelatedVideoSkeleton from "../components/RelatedVideoSkeleton.jsx";
 import CommentBox from "../components/comment/CommentBox.jsx";
@@ -47,6 +52,7 @@ import warningToast from "../utils/notification/warning.js";
 import { toggleSubscribedChannel } from "../store/slices/subscriptionSlice.js";
 import { toggleLike } from "../store/slices/likeSlice.js";
 import { addVideoToWatchHistory } from "../services/user/profile.api.js";
+import successToast from "../utils/notification/success.js";
 
 const Watch = () => {
   const [videoData, setVideoData] = useState();
@@ -57,6 +63,7 @@ const Watch = () => {
   const [isDislike, setIsDislike] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [downloadLoading, setDownloadLoading] = useState(false);
 
   const { videoId } = useParams();
   const navigate = useNavigate();
@@ -226,6 +233,24 @@ const Watch = () => {
     );
   };
 
+  const handleVideoDownload = async () => {
+    setDownloadLoading(true);
+    const res = await getVideoDownloadLink(videoData?.videofilepublicid);
+
+    if (res?.statuscode !== 200 || !res?.data?.url) {
+      errorToast(`${res?.data?.message}`);
+      setDownloadLoading(false);
+      return;
+    }
+
+    console.log("Link: ", res?.data?.url)
+    
+    window.open(res?.data?.url, "_blank")
+
+    successToast("Download started");
+    setDownloadLoading(false);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -297,8 +322,21 @@ const Watch = () => {
                 <Button variant="ghost">
                   <Share className="w-4 h-4 mr-2" /> Share
                 </Button>
-                <Button variant="ghost">
-                  <Download className="w-4 h-4 mr-2" /> Download
+                <Button
+                  variant="ghost"
+                  onClick={handleVideoDownload}
+                  disabled={downloadLoading}
+                >
+                  {downloadLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4 mr-2" /> Download
+                    </>
+                  )}
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

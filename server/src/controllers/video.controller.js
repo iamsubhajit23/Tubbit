@@ -5,6 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {
   deleteFromCloudinary,
   uploadOnCloudinary,
+  videoDownloadLink,
 } from "../utils/cloudinary.js";
 import { User } from "../models/user.models.js";
 import { Like } from "../models/like.model.js"
@@ -365,6 +366,26 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     );
 });
 
+const getVideoDownloadLink = asyncHandler(async (req, res) => {
+  const { publicId } = req.params;
+
+  if (!publicId) {
+    throw new apiError(400, "Public id is required download video");
+  }
+
+  const downloadUrl = videoDownloadLink(publicId);
+
+  if (!downloadUrl) {
+    throw new apiError(404, "Not found download link for this video");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new apiResponse(200, { url: downloadUrl }, "Video download link fetched successfully")
+    )
+})
+
 export {
   uploadVideo,
   getVideoById,
@@ -373,4 +394,5 @@ export {
   updateThumbnail,
   updateVideoInfo,
   togglePublishStatus,
+  getVideoDownloadLink,
 };

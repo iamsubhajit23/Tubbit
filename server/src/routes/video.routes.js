@@ -3,6 +3,7 @@ import {
   deleteVideo,
   getAllVideos,
   getVideoById,
+  getVideoDownloadLink,
   togglePublishStatus,
   updateThumbnail,
   updateVideoInfo,
@@ -42,4 +43,7 @@ router
   .patch(verifyJWT, upload.single("thumbnail"), updateThumbnail);
 
 router.route("/:videoId/publish-status").patch(verifyJWT, togglePublishStatus);
+
+router.route("/download/:publicId").get(verifyJWT, getVideoDownloadLink)
+
 export default router;

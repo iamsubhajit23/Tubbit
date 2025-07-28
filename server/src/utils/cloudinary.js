@@ -48,4 +48,24 @@ const deleteFromCloudinary = async (public_id, resource_type) => {
   }
 };
 
-export { uploadOnCloudinary, deleteFromCloudinary };
+const videoDownloadLink = (public_id) => {
+  try {
+    if (!public_id) {
+      console.log("No public id provided for download");
+    }
+
+    const url = cloudinary.url(public_id, {
+      resource_type: "video",
+      flags: "attachment",
+      sign_url: true,
+      expires_at: Math.floor(Date.now() / 1000) + 60 * 10,
+    });
+
+    return url;
+  } catch (error) {
+    console.error(`Error getting ${public_id} this public video id from Cloudinary: `, error.message)
+    return null;
+  }
+}
+
+export { uploadOnCloudinary, deleteFromCloudinary, videoDownloadLink };

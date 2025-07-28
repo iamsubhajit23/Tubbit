@@ -124,6 +124,17 @@ const getVideoById = async (videoId) => {
   }
 };
 
+const getVideoDownloadLink = async (publicId) => {
+  try {
+    const res = await api.get(`/video/download/${publicId}`);
+    return res.data;
+  } catch (error) {
+    console.log(error?.response?.data?.message);
+    return error?.response;
+  }
+};
+
+
 export {
   uploadVideo,
   deleteVideo,
@@ -132,4 +143,5 @@ export {
   togglePublishStatus,
   getAllVideos,
   getVideoById,
+  getVideoDownloadLink,
 };
