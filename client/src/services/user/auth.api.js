@@ -25,7 +25,7 @@ const signUp = async (credentials) => {
       apiErrorHandler(null, "Signup failed. Please try again.");
     }
 
-    successToast("Signup successfull. Please sign in, to confirm your account.");
+    successToast("Your account has been created successfully.");
     return res;
   } catch (error) {
     const message = error?.response?.data?.message;
