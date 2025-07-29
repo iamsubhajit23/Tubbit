@@ -39,6 +39,7 @@ const Auth = () => {
 
   const navigate = useNavigate();
   const signinDispatch = useDispatch();
+  const signupDispatch = useDispatch();
 
   const {
     register: signinRegister,
@@ -83,9 +84,11 @@ const Auth = () => {
       setIsSignuping(false);
       return;
     }
+
+    const userData = response?.data;
+    signupDispatch(storeLogin(userData))
     setIsSignuping(false);
-    navigate("/auth");
-    window.location.reload();
+    navigate("/");
   };
 
   return (
