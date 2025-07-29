@@ -56,18 +56,30 @@ const userRegister = asyncHandler(async (req, res) => {
   });
 
   const createdUser = await User.findById(user._id).select(
-    "-password -refreshtoken"
+    "-password -refreshtoken -watchhistory"
   );
-
-  await redis.del(`verified:${email}`);
 
   if (!createdUser) {
     throw new apiError(500, "Something went wrong while registering the user!");
   }
 
+  const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(createdUser._id);
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+  }
+
+  await redis.del(`verified:${email}`);
+
   return res
     .status(201)
-    .json(new apiResponse(200, createdUser, "User registered Successfully"));
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new apiResponse(200, createdUser, "User registered Successfully")
+    );
 });
 
 const userLogIn = asyncHandler(async (req, res) => {
@@ -150,7 +162,7 @@ const userLogOut = asyncHandler(async (req, res) => {
 });
 
 const sendEmailOtp = asyncHandler(async (req, res) => {
-  const {email}  = req.body;
+  const { email } = req.body;
 
   if (!email) {
     throw new apiError(400, "Email is required");
