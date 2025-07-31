@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Mail, Shield, Lock, Loader2 } from "lucide-react";
+import { useTheme } from "../components/ThemeProvider.jsx";
+import lightLogo from "../assets/Tubbit_logo_light.png";
+import darkLogo from "../assets/Tubbit_logo_dark.png";
 import { Button } from "../components/ui/Button.jsx";
 import { Input } from "../components/ui/Input.jsx";
 import { Label } from "../components/ui/Label.jsx";
@@ -19,6 +22,8 @@ import {
 } from "../services/user/auth.api.js";
 
 const ResetPassword = () => {
+  const { theme } = useTheme();
+  const logo = theme == "dark" ? darkLogo : lightLogo;
   const navigate = useNavigate();
   const [step, setStep] = useState("email");
   const [emailError, setEmailError] = useState();
@@ -280,10 +285,16 @@ const ResetPassword = () => {
           </Button>
 
           <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-tubbit-primary to-tubbit-secondary rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-2xl">T</span>
+            <div
+              onClick={() => navigate("/")}
+              className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center mx-auto cursor-pointer"
+            >
+              <img
+                src={logo}
+                alt="Tubbit Logo"
+                className="h-full w-full object-contain"
+              />
             </div>
-            <h1 className="text-3xl font-bold text-gradient mb-2">Tubbit</h1>
           </div>
         </div>
 
@@ -296,7 +307,9 @@ const ResetPassword = () => {
           <CardContent className="space-y-6">
             <Alert
               className={`${
-                emailError || otpError || passwordError ? "border-red-400" : "bg-background text-foreground"
+                emailError || otpError || passwordError
+                  ? "border-red-400"
+                  : "bg-background text-foreground"
               }`}
             >
               <AlertDescription className="text-sm">
