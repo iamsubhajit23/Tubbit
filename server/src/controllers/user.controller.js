@@ -177,7 +177,7 @@ const sendEmailOtp = asyncHandler(async (req, res) => {
 
   redis.set(`otp:${email}`, otp, "EX", 300);
 
-  await sendOtp(email, otp);
+  await sendOtp(email, otp, "signup");
 
   return res.status(200).json(new apiResponse(200, {}, "OTP sent to email"));
 });
@@ -274,6 +274,61 @@ const changeUserPassword = asyncHandler(async (req, res) => {
     .status(200)
     .json(new apiResponse(200, {}, "Password changed Successfully!"));
 });
+
+const resetPasswordEmailOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new apiError(401, "email is required");
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new apiError(404, "User with this email not exist");
+  }
+
+  if (user.authtype === "github") {
+    throw new apiError(401, "User with social sign up not allowed to reset password")
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  await redis.set(`otp:${email}`, otp, "EX", 300);
+
+  await sendOtp(email, otp, "resetpassword");
+
+  return res.status(200).json(new apiResponse(200, {}, "OTP sent to email"));
+})
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!password || password.trim() === "") {
+    throw new apiError(401, "Password is required");
+  }
+
+  const isVerified = await redis.get(`verified:${email}`);
+
+  if (isVerified !== "true") {
+    throw new apiError(401, "Please verify your email first");
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new apiError(404, "User with this email not exist");
+  }
+
+  user.password = password;
+  await user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(
+      new apiResponse(200, {}, "Your password reset successfully")
+    )
+})
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id).select(
@@ -559,6 +614,8 @@ export {
   verifyEmailOtp,
   refreshAccessToken,
   changeUserPassword,
+  resetPasswordEmailOtp,
+  resetPassword,
   getCurrentUser,
   updateUserDetails,
   updateUserAvatar,
