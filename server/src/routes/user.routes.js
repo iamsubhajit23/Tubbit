@@ -7,6 +7,8 @@ import {
   getUserChannelProfile,
   getUserWatchHistory,
   refreshAccessToken,
+  resetPassword,
+  resetPasswordEmailOtp,
   sendEmailOtp,
   updateUserAvatar,
   updateUserCoverImage,
@@ -44,13 +46,17 @@ router.route("/login").post(limiter, userLogIn);
 
 router.route("/logout").post(verifyJWT, userLogOut);
 
-router.route("/send-email-otp").post(sendEmailOtp);
+router.route("/send-email-otp").post(limiter, sendEmailOtp);
 
-router.route("/verify-email-otp").post(verifyEmailOtp);
+router.route("/verify-email-otp").post(limiter, verifyEmailOtp);
 
 router.route("/refresh-token").post(refreshAccessToken);
 
 router.route("/change-password").post(verifyJWT, changeUserPassword);
+
+router.route("/reset-password-email-otp").post(limiter, resetPasswordEmailOtp);
+
+router.route("/reset-password").post(resetPassword);
 
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 

@@ -124,4 +124,50 @@ const verifyEmailOtp = async (email, otp) => {
   }
 }
 
-export { signUp, signIn, signOut, sendEmailOtp, verifyEmailOtp };
+const sendResetPasswordEmailOtp = async (email) => {
+  try {
+    if (!email) {
+      console.log("Email is required")
+      return;
+    }
+
+    const res = await api.post("/user/reset-password-email-otp", { email });
+
+    return res.data;
+  } catch (error) {
+    return error?.response?.data;
+  }
+}
+
+const resetPassword = async (email, password) => {
+  try {
+    if (!email) {
+      console.log("Email is required");
+      return;
+    }
+
+    if (!password) {
+      console.log("Password is required");
+      return;
+    }
+
+    const res = await api.post("/user/reset-password", {
+      email,
+      password,
+    });
+
+    return res.data;
+  } catch (error) {
+    return error?.response?.data
+  }
+}
+
+export {
+  signUp,
+  signIn,
+  signOut,
+  sendEmailOtp,
+  verifyEmailOtp,
+  sendResetPasswordEmailOtp,
+  resetPassword,
+};

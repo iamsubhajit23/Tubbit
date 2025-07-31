@@ -17,6 +17,7 @@ import Profile from "./pages/Profile.jsx";
 import Tweets from "./pages/Tweets.jsx";
 import Tweet from "./pages/Tweet.jsx";
 import Auth from "./pages/Auth.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 import WatchHistory from "./pages/WatchHistory.jsx";
 import LikedVideos from "./pages/LikedVideos.jsx";
 import Playlists from "./pages/Playlists.jsx";
@@ -37,7 +38,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <ToastContainer />
             <BrowserRouter>
               <Routes>
-                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/*" element={<App />}>
                   <Route path="" element={<Home />} />
                   <Route path="search/" element={<SearchPage />} />

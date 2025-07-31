@@ -5,7 +5,7 @@ dotenv.config({
   path: "./.env"
 })
 
-const sendOtp = async (toEmail, otp) => {
+const sendOtp = async (toEmail, otp, otpFor) => {
   const transporter = nodemailer.createTransport({
     host: process.env.MAIL_HOST,
     port: process.env.MAIL_PORT,
@@ -36,7 +36,7 @@ const sendOtp = async (toEmail, otp) => {
   const mailOptions = {
     from: `"Tubbit" <${process.env.MAIL_FROM}>`,
     to: toEmail,
-    subject: "no-reply: Tubbit email verification OTP",
+    subject: `${otpFor === "signup"? "no-reply: Tubbit email verification OTP": "no-reply: Your RESET Password OTP"}`,
     html: `
 <!DOCTYPE html>
 <html lang="en">
@@ -73,7 +73,7 @@ const sendOtp = async (toEmail, otp) => {
       <div class="greeting">
         <h2>Hi User,</h2>
         <div class="message">
-          <p>Your verification code is:</p>
+          <p>${otpFor === "signup"? "Your verification OTP is:": "Your reset password OTP is:"}</p>
         </div>
       </div>
 
