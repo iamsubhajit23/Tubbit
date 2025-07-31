@@ -220,7 +220,7 @@ const Auth = () => {
                 </form>
 
                 <div className="mt-4 text-center">
-                  <Button variant="link" className="text-sm">
+                  <Button variant="link" className="text-sm" onClick= {() => navigate('/reset-password')}>
                     Forgot your password?
                   </Button>
                 </div>
