@@ -338,7 +338,7 @@ const Watch = () => {
                 />
                 <Button
                   variant="ghost"
-                  onClick={handleVideoDownload}
+                  onClick={() => {authStatus? handleVideoDownload: navigate("/auth")}}
                   disabled={downloadLoading}
                 >
                   {downloadLoading ? (
