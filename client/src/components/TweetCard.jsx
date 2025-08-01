@@ -249,7 +249,7 @@ const TweetCard = ({
             </Button>
 
             <Button
-              onClick={() => setIsSharePanelOpen(true)}
+              onClick={() => {authStatus? setIsSharePanelOpen(true) : navigate("/auth")}}
               variant="ghost"
               size="sm"
               className="flex items-center gap-2 hover:text-blue-500 hover:bg-blue-500/10"
