@@ -15,11 +15,15 @@ const CommentBox = ({ videoId, setComments }) => {
 
     if (![200, 201].includes(response.statuscode)) {
       errorToast("Failed to post comment");
+      setIsPosting(false);
       return;
     } else {
       successToast("Comment posted");
       setComment("");
-      setComments((prev) => [response.data, ...prev]);
+      const newComment = response.data?.comment
+      if (newComment) {
+        setComments((prev) => [newComment, ...prev]);
+      }
     }
     setIsPosting(false);
   };

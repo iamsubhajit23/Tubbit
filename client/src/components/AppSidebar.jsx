@@ -36,7 +36,7 @@ const AppSidebar = () => {
       }
     };
     fetchSubscribedChannels();
-  }, [channels]);
+  }, [channels, authStatus]);
 
   const mainItems = [
     { title: "Home", url: "/", icon: Home },

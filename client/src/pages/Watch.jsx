@@ -440,6 +440,7 @@ const Watch = () => {
                       comment={comment}
                       authUserId={user?.data?._id}
                       setComments={setComments}
+                      controllerFor="video"
                     />
                   </div>
 
