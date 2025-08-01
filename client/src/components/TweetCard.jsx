@@ -26,6 +26,7 @@ import {
   toggleLikeOnTweet,
 } from "../services/like/like.api.js";
 import { getTweetComments } from "../services/comment/comment.api.js";
+import SharePanel from "./SharePanel.jsx";
 import { deleteTweet, getTweetById } from "../services/tweet/tweet.api.js";
 import { formatDistanceToNow } from "date-fns";
 
@@ -42,8 +43,10 @@ const TweetCard = ({
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [repliesCount, setRepliesCount] = useState(0);
+  const [isSharePanelOpen, setIsSharePanelOpen] = useState(false);
   const [tweetOwnerId, setTweetOwnerId] = useState(null);
   const [isTweetDeleting, setIsTweetDeleting] = useState(false);
+
 
   const navigate = useNavigate();
   const authStatus = useSelector((state) => state.auth.status);
@@ -142,6 +145,7 @@ const TweetCard = ({
           onClick={() => {
             authStatus ? navigate(`/profile/${username}`) : navigate("/auth");
           }}
+          className="w-10 h-10 cursor-pointer"
         >
           <AvatarImage src={userAvatar} alt={username} />
           <AvatarFallback>{fullname?.slice(0, 1).toUpperCase()}</AvatarFallback>
@@ -245,12 +249,21 @@ const TweetCard = ({
             </Button>
 
             <Button
+              onClick={() => setIsSharePanelOpen(true)}
               variant="ghost"
               size="sm"
               className="flex items-center gap-2 hover:text-blue-500 hover:bg-blue-500/10"
             >
               <Share className="h-4 w-4" />
             </Button>
+            <SharePanel
+            isOpen={isSharePanelOpen}
+            onClose={() => setIsSharePanelOpen(false)}
+            type="tweet"
+            id={tweetId}
+            description={content}
+            thumbnail={imageList?.[0]}
+          />
           </div>
         </div>
       </div>

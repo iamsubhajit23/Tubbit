@@ -43,6 +43,7 @@
     "react-hook-form": "^7.56.2",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.6.3",
+    "react-share": "^5.2.2",
     "react-toastify": "^11.0.5"
   },
   "devDependencies": {
