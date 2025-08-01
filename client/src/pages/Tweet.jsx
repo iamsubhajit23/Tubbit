@@ -20,6 +20,7 @@ import {
   getLikesOnTweet,
 } from "../services/like/like.api.js";
 import { addCommentOnTweet } from "../services/comment/comment.api.js";
+import SharePanel from "../components/SharePanel.jsx";
 
 const Tweet = () => {
   const { tweetId } = useParams();
@@ -30,6 +31,8 @@ const Tweet = () => {
   const [reply, setReply] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [isSharePanelOpen, setIsSharePanelOpen] = useState(false);
+
   const authStatus = useSelector((state) => state.auth.status);
   const authUserData = useSelector((state) => state.auth.userData);
   const user = authUserData || {};
@@ -199,12 +202,21 @@ const Tweet = () => {
             <span className="text-sm">{likeCount}</span>
           </Button>
           <Button
+            onClick={() => setIsSharePanelOpen(true)}
             variant="ghost"
             size="sm"
             className="flex items-center gap-2 hover:text-blue-500 hover:bg-blue-500/10"
           >
             <Share className="h-5 w-5" />
           </Button>
+          <SharePanel
+            isOpen={isSharePanelOpen}
+            onClose={() => setIsSharePanelOpen(false)}
+            type="tweet"
+            id={tweetData?._id}
+            description={tweetData?.content}
+            thumbnail={tweetData?.image}
+          />
         </div>
       </Card>
 

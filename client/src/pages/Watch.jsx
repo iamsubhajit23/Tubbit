@@ -53,6 +53,7 @@ import { toggleSubscribedChannel } from "../store/slices/subscriptionSlice.js";
 import { toggleLike } from "../store/slices/likeSlice.js";
 import { addVideoToWatchHistory } from "../services/user/profile.api.js";
 import successToast from "../utils/notification/success.js";
+import SharePanel from "../components/SharePanel.jsx";
 
 const Watch = () => {
   const [videoData, setVideoData] = useState();
@@ -64,6 +65,7 @@ const Watch = () => {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [downloadLoading, setDownloadLoading] = useState(false);
+  const [isSharePanelOpen, setIsSharePanelOpen] = useState(false);
 
   const { videoId } = useParams();
   const navigate = useNavigate();
@@ -243,9 +245,9 @@ const Watch = () => {
       return;
     }
 
-    console.log("Link: ", res?.data?.url)
-    
-    window.open(res?.data?.url, "_blank")
+    console.log("Link: ", res?.data?.url);
+
+    window.open(res?.data?.url, "_blank");
 
     successToast("Download started");
     setDownloadLoading(false);
@@ -319,9 +321,21 @@ const Watch = () => {
                   </Button>
                 </div>
 
-                <Button variant="ghost">
+                <Button
+                  variant="ghost"
+                  onClick={() => setIsSharePanelOpen(true)}
+                >
                   <Share className="w-4 h-4 mr-2" /> Share
                 </Button>
+                <SharePanel
+                  isOpen={isSharePanelOpen}
+                  onClose={() => setIsSharePanelOpen(false)}
+                  type="watch"
+                  id={videoData?._id}
+                  title={videoData?.title}
+                  description={videoData?.description}
+                  thumbnail={videoData?.thumbnail}
+                />
                 <Button
                   variant="ghost"
                   onClick={handleVideoDownload}
