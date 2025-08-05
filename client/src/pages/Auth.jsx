@@ -86,9 +86,18 @@ const Auth = () => {
     }
 
     const userData = response?.data;
-    signupDispatch(storeLogin(userData))
+    signupDispatch(storeLogin(userData));
     setIsSignuping(false);
     navigate("/");
+  };
+
+  //redirect to backend URL for social login/sign up
+  const handleGoogleAuth = () => {
+    window.location.href = `${import.meta.env.VITE_BASE_URI}/user/google`;
+  };
+
+  const handleGithubAuth = () => {
+    window.location.href = `${import.meta.env.VITE_BASE_URI}/user/github`;
   };
 
   return (
@@ -220,7 +229,11 @@ const Auth = () => {
                 </form>
 
                 <div className="mt-4 text-center">
-                  <Button variant="link" className="text-sm" onClick= {() => navigate('/reset-password')}>
+                  <Button
+                    variant="link"
+                    className="text-sm"
+                    onClick={() => navigate("/reset-password")}
+                  >
                     Forgot your password?
                   </Button>
                 </div>
@@ -358,10 +371,18 @@ const Auth = () => {
         <div className="mb-3 text-center">
           <p className="text-sm text-muted-foreground">Continue with</p>
           <div className="flex gap-2 mt-2">
-            <Button variant="outline" className="flex-1 hover-scale">
+            <Button
+              onClick={handleGoogleAuth}
+              variant="outline"
+              className="flex-1 hover-scale"
+            >
               Google
             </Button>
-            <Button variant="outline" className="flex-1 hover-scale">
+            <Button
+              onClick={handleGithubAuth}
+              variant="outline"
+              className="flex-1 hover-scale"
+            >
               GitHub
             </Button>
           </div>

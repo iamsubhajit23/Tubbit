@@ -1,11 +1,13 @@
 import { Router } from "express";
 import { rateLimit } from "express-rate-limit";
+import passport from "passport";
 import {
   addVideoToWatchHistory,
   changeUserPassword,
   getCurrentUser,
   getUserChannelProfile,
   getUserWatchHistory,
+  handleSocialLogin,
   refreshAccessToken,
   resetPassword,
   resetPasswordEmailOtp,
@@ -18,6 +20,7 @@ import {
   userRegister,
   verifyEmailOtp,
 } from "../controllers/user.controller.js";
+import "../passport/index.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router();
@@ -25,8 +28,8 @@ const router = Router();
 const limiter = rateLimit({
   max: 3,
   windowMs: 15 * 60 * 1000,
-  message: {error: 'Too many requests, please try again later.'},
-})
+  message: { error: "Too many requests, please try again later." },
+});
 
 router.route("/register").post(
   upload.fields([
@@ -74,6 +77,35 @@ router.route("/channel/:username").get(verifyJWT, getUserChannelProfile);
 
 router.route("/watchhistory").get(verifyJWT, getUserWatchHistory);
 
-router.route("/add-video-to-watch-history/:videoId").post(verifyJWT, addVideoToWatchHistory);
+router
+  .route("/add-video-to-watch-history/:videoId")
+  .post(verifyJWT, addVideoToWatchHistory);
+
+// SSO routes
+router.route("/google").get(
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  }),
+  (_, res) => {
+    res.send("Redirecting to google...");
+  }
+);
+
+router.route("/github").get(
+  passport.authenticate("github", {
+    scope: ["profile", "email"],
+  }),
+  (_, res) => {
+    res.send("Redirecting to github...");
+  }
+);
+
+router
+  .route("/google/callback")
+  .get(passport.authenticate("google"), handleSocialLogin);
+
+router
+  .route("/github/callback")
+  .get(passport.authenticate("github"), handleSocialLogin);
 
 export default router;

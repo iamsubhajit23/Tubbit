@@ -1,7 +1,14 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import session from "express-session";
+import passport from "passport";
+import dotenv from "dotenv";
 import { errorHandler } from "./middlewares/errorHandler.js";
+
+dotenv.config({
+  path: "./.env",
+});
 
 const app = express();
 
@@ -25,6 +32,16 @@ app.use(
 app.use(express.static("public"));
 app.use(cookieParser());
 app.set("trust proxy", true);
+
+app.use(
+  session({
+    secret: process.env.EXPRESS_SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true,
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 //routes configuration
 import userRouter from "./routes/user.routes.js";
