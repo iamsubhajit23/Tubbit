@@ -37,13 +37,14 @@ const userSchema = new Schema(
     ],
     password: {
       type: String,
+      required: true
     },
     refreshtoken: {
       type: String,
     },
     authtype: {
       type: String,
-      enum: ["local", "google", "github"],
+      enum: ["email_password", "google", "github"],
       default: "local",
     }
   },

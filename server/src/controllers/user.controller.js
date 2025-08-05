@@ -1,3 +1,4 @@
+import dotenv from "dotenv";
 import { apiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.models.js";
@@ -7,6 +8,11 @@ import JWT from "jsonwebtoken";
 import { deleteLocalFile } from "../utils/deleteLocalFile.js";
 import redis from "../redis/client.js";
 import { sendOtp } from "../utils/sendOtp.js";
+
+dotenv.config({
+  path: "./.env",
+});
+
 
 const generateAccessTokenAndRefreshToken = async (userId) => {
   try {
@@ -63,13 +69,14 @@ const userRegister = asyncHandler(async (req, res) => {
     throw new apiError(500, "Something went wrong while registering the user!");
   }
 
-  const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(createdUser._id);
+  const { accessToken, refreshToken } =
+    await generateAccessTokenAndRefreshToken(createdUser._id);
 
   const options = {
     httpOnly: true,
     secure: true,
     sameSite: "None",
-  }
+  };
 
   await redis.del(`verified:${email}`);
 
@@ -77,9 +84,7 @@ const userRegister = asyncHandler(async (req, res) => {
     .status(201)
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
-    .json(
-      new apiResponse(200, createdUser, "User registered Successfully")
-    );
+    .json(new apiResponse(200, createdUser, "User registered Successfully"));
 });
 
 const userLogIn = asyncHandler(async (req, res) => {
@@ -203,6 +208,37 @@ const verifyEmailOtp = asyncHandler(async (req, res) => {
     .json(new apiResponse(200, {}, "OTP verified successfully"));
 });
 
+const handleSocialLogin = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  if (!userId) {
+    throw new apiError(401, "User id is required");
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new apiError(404, "User not exist");
+  }
+
+  const { accessToken, refreshToken } =
+    await generateAccessTokenAndRefreshToken(userId);
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .redirect(
+      `${process.env.CLIENT_SSO_REDIRECT_URL}?accessToken=${accessToken}&refreshToken=${refreshToken}`
+    );
+});
+
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies.refreshtoken || req.body.refreshToken;
@@ -290,7 +326,10 @@ const resetPasswordEmailOtp = asyncHandler(async (req, res) => {
   }
 
   if (user.authtype === "github") {
-    throw new apiError(401, "User with social sign up not allowed to reset password")
+    throw new apiError(
+      401,
+      "User with social sign up not allowed to reset password"
+    );
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -300,7 +339,7 @@ const resetPasswordEmailOtp = asyncHandler(async (req, res) => {
   await sendOtp(email, otp, "resetpassword");
 
   return res.status(200).json(new apiResponse(200, {}, "OTP sent to email"));
-})
+});
 
 const resetPassword = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -326,10 +365,8 @@ const resetPassword = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(
-      new apiResponse(200, {}, "Your password reset successfully")
-    )
-})
+    .json(new apiResponse(200, {}, "Your password reset successfully"));
+});
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id).select(
@@ -613,6 +650,7 @@ export {
   userLogOut,
   sendEmailOtp,
   verifyEmailOtp,
+  handleSocialLogin,
   refreshAccessToken,
   changeUserPassword,
   resetPasswordEmailOtp,
