@@ -38,8 +38,13 @@ const signIn = async (credentials) => {
   try {
     const { username, email, password } = credentials;
 
-    if ([username, email, password].some((field) => !field?.trim())) {
-      errorToast("Missing required fields");
+    if (!username && !email) {
+      errorToast("Either email or username is required");
+      return;
+    }
+
+    if (!password) {
+      errorToast("Password is required");
       return;
     }
 
@@ -135,6 +140,10 @@ const sendResetPasswordEmailOtp = async (email) => {
 
     return res.data;
   } catch (error) {
+    const status = error?.response?.status;
+    if (status === 429) {
+      errorToast("Too many requests. Please try again after 15 minitues.");
+    }
     return error?.response?.data;
   }
 }
