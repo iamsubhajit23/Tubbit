@@ -58,7 +58,7 @@ const userRegister = asyncHandler(async (req, res) => {
     email,
     fullname,
     password,
-    authtype: "local",
+    authtype: "email_password",
   });
 
   const createdUser = await User.findById(user._id).select(
@@ -92,12 +92,12 @@ const userLogIn = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
 
   //validate data
-  if (!username || !email) {
-    throw new apiError(400, "both username and email are required");
+  if (!username && !email) {
+    throw new apiError(400, "Either email or username is required");
   }
   //find the user
   const user = await User.findOne({
-    $and: [{ username }, { email }],
+    $or: [{ username }, { email }],
   });
 
   //validate user
@@ -325,10 +325,10 @@ const resetPasswordEmailOtp = asyncHandler(async (req, res) => {
     throw new apiError(404, "User with this email not exist");
   }
 
-  if (user.authtype === "github") {
+  if (user.authtype !== "email_password") {
     throw new apiError(
       401,
-      "User with social sign up not allowed to reset password"
+      `User with ${user.authtype?.split("_")?.join("&")} sign up not allowed to reset password`
     );
   }
 

@@ -54,16 +54,24 @@ const Auth = () => {
     watch: signupWatch,
   } = useForm();
 
-  const watchSigninEmail = signinWatch("email");
-
   const logInUser = async (data) => {
     setIsSigningin(true);
-    const response = await signIn(data);
+
+    const { identifier, password } = data;
+
+    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,})+$/;
+
+    const payload = emailRegex.test(identifier)
+      ? { email: identifier, password }
+      : { username: identifier, password };
+
+    const response = await signIn(payload);
 
     if (response?.status !== 200 || response?.data?.success === false) {
       setIsSigningin(false);
       return;
     }
+
     const userData = response.data;
     signinDispatch(storeLogin(userData));
     setIsSigningin(false);
@@ -143,42 +151,34 @@ const Auth = () => {
                   onSubmit={signinHandleSubmit(logInUser)}
                   className="space-y-4"
                 >
+                  {/* Username or Email */}
                   <div className="space-y-2">
-                    <Label htmlFor="signin-username">Username</Label>
+                    <Label htmlFor="signin-identifier">Username or Email</Label>
                     <Input
-                      type="username"
-                      placeholder="johndoe"
+                      type="text"
+                      placeholder="johndoe or john@example.com"
                       className="transition-all focus:scale-[1.02]"
-                      {...signinRegister("username", {
-                        required: "Username is required",
-                      })}
-                    />
-                    {signinErrors.username && (
-                      <span className="text-sm text-red-200">
-                        {signinErrors.username.message}
-                      </span>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
-                    <Input
-                      type="email"
-                      placeholder="john@example.com"
-                      className="transition-all focus:scale-[1.02]"
-                      {...signinRegister("email", {
-                        required: "Email is required",
-                        pattern: {
-                          value: /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-                          message: "Invalid email address",
+                      {...signinRegister("identifier", {
+                        required: "Username or Email is required",
+                        validate: (value) => {
+                          const emailRegex =
+                            /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+                          if (!value) return "Username or Email is required";
+                          if (value.includes("@") && !emailRegex.test(value)) {
+                            return "Invalid email format";
+                          }
+                          return true;
                         },
                       })}
                     />
-                    {signinErrors.email && (
+                    {signinErrors.identifier && (
                       <span className="text-sm text-red-200">
-                        {signinErrors.email.message}
+                        {signinErrors.identifier.message}
                       </span>
                     )}
                   </div>
+
+                  {/* Password */}
                   <div className="space-y-2">
                     <Label htmlFor="signin-password">Password</Label>
                     <div className="relative">
@@ -212,10 +212,12 @@ const Auth = () => {
                       </span>
                     )}
                   </div>
+
+                  {/* Submit */}
                   <Button
                     type="submit"
                     className="w-full hover-scale"
-                    disabled={!watchSigninEmail || isSigningin}
+                    disabled={!signinWatch("identifier") || isSigningin}
                   >
                     {isSigningin ? (
                       <>

@@ -93,7 +93,7 @@ router.route("/google").get(
 
 router.route("/github").get(
   passport.authenticate("github", {
-    scope: ["profile", "email"],
+    scope: ["user:email"],
   }),
   (_, res) => {
     res.send("Redirecting to github...");
