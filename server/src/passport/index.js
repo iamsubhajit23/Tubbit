@@ -24,11 +24,7 @@ try {
       }
     } catch (error) {
       next(
-        new apiError(
-          500,
-          "Something went wrong when deserialize the user. ERROR: ",
-          error
-        ),
+        new apiError(500, `Something went wrong when deserialize the user.`),
         null
       );
     }
@@ -49,11 +45,7 @@ try {
             next(
               new apiError(
                 400,
-                "You are previously registered using " +
-                  user.authtype?.split("_")?.join("&") +
-                  ". Please use the " +
-                  user.authtype?.split("_")?.join("&") +
-                  " login option to access your account."
+                `You are previously registered using ${user.authtype?.split("_")?.join("&")}. Please use the ${user.authtype?.split("_")?.join("&")} login option to access your account.`
               ),
               null
             );
@@ -73,10 +65,7 @@ try {
           if (createdUser) {
             next(null, createdUser);
           } else {
-            next(
-              new apiError(500, "Error while registering the user", error),
-              null
-            );
+            next(new apiError(500, "Error while registering the user"), null);
           }
         }
       }
@@ -89,59 +78,64 @@ try {
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackURL: process.env.GITHUB_CALLBACK_URL,
+        scope: ["user:email"],
       },
       async (_, __, profile, next) => {
-        const user = await User.findOne({ email: profile._json?.email });
-        if (user) {
-          if (user.authtype !== "github") {
-            next(
+        try {
+          const email =
+            profile.emails?.find((e) => e.primary && e.verified)?.value ||
+            profile.emails?.[0]?.value ||
+            profile._json?.email ||
+            null;
+
+          if (!email) {
+            return next(
               new apiError(
                 400,
-                "You are previously registered using " +
-                  user.authtype?.split("_")?.join("&") +
-                  ". Please use the " +
-                  user.authtype?.split("_")?.join("&") +
-                  " login option to access your account."
+                "Unable to retrieve your email from GitHub. Please make sure you have a verified email in your GitHub account."
               ),
               null
             );
-          } else {
-            next(null, user);
           }
-        } else {
-          if (!profile._json.email) {
-            next(
-              new apiError(
-                400,
-                "It looks like your GitHub email is hidden. Please update your GitHub settings to make your email public, or log in using another available method."
-              ),
-              null
-            );
-          } else {
-            const existUsername = await User.findOne({
-              username: profile?.username,
-            });
 
-            const createdUser = await User.create({
-              email: profile._json?.email,
-              username: existUsername
-                ? profile_json.email?.split("@")[0]
-                : profile.username,
-              fullname: profile._json?.name,
-              password: profile._json?.node_id,
-              avatar: profile._json?.avatar_url,
-              authtype: "github",
-            });
-
-            if (createdUser) {
-              next(null, createdUser);
-            } else {
-              next(
-                new apiError(500, "Error while registering the user", error),
+          let user = await User.findOne({ email });
+          if (user) {
+            if (user.authtype !== "github") {
+              return next(
+                new apiError(
+                  400,
+                  `You are previously registered using ${user.authtype?.split("_")?.join("&")}. Please use the ${user.authtype?.split("_")?.join("&")} login option to access your account.`
+                ),
                 null
               );
             }
+            return next(null, user);
           }
+
+          let finalUsername = profile.username || email.split("@")[0];
+          const usernameExists = await User.findOne({
+            username: finalUsername,
+          });
+          if (usernameExists) {
+            finalUsername =
+              finalUsername + "_" + Math.floor(Math.random() * 10000);
+          }
+
+          const createdUser = await User.create({
+            email,
+            username: finalUsername,
+            fullname: profile._json?.name || finalUsername,
+            password: profile._json?.node_id,
+            avatar: profile._json?.avatar_url,
+            authtype: "github",
+          });
+
+          return next(null, createdUser);
+        } catch (err) {
+          return next(
+            new apiError(500, "Error while registering the user"),
+            null
+          );
         }
       }
     )
