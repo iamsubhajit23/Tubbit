@@ -1,3 +1,4 @@
+import {Analytics} from "@vercel/analytics/react"
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
@@ -59,6 +60,7 @@ const App = () => {
           </main>
         </div>
       </div>
+      <Analytics />
     </SidebarProvider>
   );
 };
