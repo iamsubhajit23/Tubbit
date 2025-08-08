@@ -4,6 +4,8 @@ import cookieParser from "cookie-parser";
 import session from "express-session";
 import passport from "passport";
 import dotenv from "dotenv";
+import requestIp from "request-ip";
+import { rateLimit } from "express-rate-limit";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
 dotenv.config({
@@ -31,7 +33,6 @@ app.use(
 );
 app.use(express.static("public"));
 app.use(cookieParser());
-app.set("trust proxy", true);
 
 app.use(
   session({
@@ -42,6 +43,28 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(requestIp.mw());
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 500,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req, res) => {
+    return req.clientIp;
+  },
+  handler: (_, __, ___, options) => {
+    throw new ApiError(
+      options.statusCode || 500,
+      `There are too many requests. You are only allowed ${
+        options.max
+      } requests per ${options.windowMs / 60000} minutes`
+    );
+  },
+});
+
+app.use(limiter);
 
 //routes configuration
 import userRouter from "./routes/user.routes.js";

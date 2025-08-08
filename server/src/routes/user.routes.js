@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { rateLimit } from "express-rate-limit";
 import passport from "passport";
 import {
   addVideoToWatchHistory,
@@ -25,12 +24,6 @@ import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router();
 
-const limiter = rateLimit({
-  max: 3,
-  windowMs: 15 * 60 * 1000,
-  message: { error: "Too many requests, please try again later." },
-});
-
 router.route("/register").post(
   upload.fields([
     {
@@ -45,19 +38,19 @@ router.route("/register").post(
   userRegister
 );
 
-router.route("/login").post(limiter, userLogIn);
+router.route("/login").post(userLogIn);
 
 router.route("/logout").post(verifyJWT, userLogOut);
 
-router.route("/send-email-otp").post(limiter, sendEmailOtp);
+router.route("/send-email-otp").post(sendEmailOtp);
 
-router.route("/verify-email-otp").post(limiter, verifyEmailOtp);
+router.route("/verify-email-otp").post(verifyEmailOtp);
 
 router.route("/refresh-token").post(refreshAccessToken);
 
 router.route("/change-password").post(verifyJWT, changeUserPassword);
 
-router.route("/reset-password-email-otp").post(limiter, resetPasswordEmailOtp);
+router.route("/reset-password-email-otp").post(resetPasswordEmailOtp);
 
 router.route("/reset-password").post(resetPassword);
 
