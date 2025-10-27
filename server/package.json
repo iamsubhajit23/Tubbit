@@ -26,6 +26,7 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cloudinary": "^2.6.0",
+    "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -43,6 +44,8 @@
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
     "request-ip": "^3.3.0",
-    "sanitize-html": "^2.16.0"
+    "sanitize-html": "^2.16.0",
+    "sib-api-v3-sdk": "^8.5.0",
+    "socket.io": "^4.8.1"
   }
 }
