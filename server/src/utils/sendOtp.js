@@ -1,22 +1,19 @@
-import nodemailer from "nodemailer";
-import dotenv from "dotenv"
+import Sib from "sib-api-v3-sdk";
+import dotenv from "dotenv";
 
-dotenv.config({
-  path: "./.env"
-})
+dotenv.config({ path: "./.env" });
+
+const client = Sib.ApiClient.instance;
+client.authentications["api-key"].apiKey = process.env.BREVO_API_KEY;
+
+const tranEmailApi = new Sib.TransactionalEmailsApi();
 
 const sendOtp = async (toEmail, otp, otpFor) => {
-  const transporter = nodemailer.createTransport({
-    host: process.env.MAIL_HOST,
-    port: process.env.MAIL_PORT,
-    auth: {
-      user: process.env.MAIL_USER,
-      pass: process.env.MAIL_PASS,
-    },
-  });
-
-  const otpDigits = otp.toString().split("").map(
-    (digit) => `
+  const otpDigits = otp
+    .toString()
+    .split("")
+    .map(
+      (digit) => `
     <td style="
       width: 40px;
       height: 50px;
@@ -31,13 +28,15 @@ const sendOtp = async (toEmail, otp, otpFor) => {
     ">
       ${digit}
     </td>`
-  ).join("");
+    )
+    .join("");
 
-  const mailOptions = {
-    from: `"Tubbit" <${process.env.MAIL_FROM}>`,
-    to: toEmail,
-    subject: `${otpFor === "signup"? "no-reply: Tubbit email verification OTP": "no-reply: Your RESET Password OTP"}`,
-    html: `
+  const subject =
+    otpFor === "signup"
+      ? "no-reply: Tubbit email verification OTP"
+      : "no-reply: Your RESET Password OTP";
+
+  const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,7 +72,11 @@ const sendOtp = async (toEmail, otp, otpFor) => {
       <div class="greeting">
         <h2>Hi User,</h2>
         <div class="message">
-          <p>${otpFor === "signup"? "Your verification OTP is:": "Your reset password OTP is:"}</p>
+          <p>${
+            otpFor === "signup"
+              ? "Your verification OTP is:"
+              : "Your reset password OTP is:"
+          }</p>
         </div>
       </div>
 
@@ -98,14 +101,22 @@ const sendOtp = async (toEmail, otp, otpFor) => {
   </div>
 </body>
 </html>
-`,
-  };
+`;
 
   try {
-    await transporter.sendMail(mailOptions);
+    await tranEmailApi.sendTransacEmail({
+      sender: {
+        email: process.env.MAIL_FROM,
+        name: "Tubbit",
+      },
+      to: [{ email: toEmail }],
+      subject,
+      htmlContent,
+    });
+
   } catch (error) {
-    console.log("Mail sending error :: ", error)
+    console.error("Mail sending error ::", error.message);
   }
 };
 
-export { sendOtp }
+export { sendOtp };
